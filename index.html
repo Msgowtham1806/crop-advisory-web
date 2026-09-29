@@ -180,8 +180,49 @@ h1{font-size:34px;line-height:1.18;font-weight:600;letter-spacing:-.6px;margin-b
 .tbl td b{color:var(--t1);font-weight:500}
 .foot{text-align:center;padding:26px 16px;font-size:12px;color:var(--t4);line-height:1.8}
 
+
+/* auth */
+.authbar{display:flex;align-items:center;gap:10px}
+.who{display:flex;align-items:center;gap:7px;font-size:13px;color:#A8C8B5}
+.av{width:26px;height:26px;border-radius:50%;background:var(--leaf);color:var(--ink);
+    display:grid;place-items:center;font-size:11px;font-weight:600}
+.ghost{color:#A8C8B5;font-size:13px}
+.ov{position:absolute;inset:0;background:rgba(15,46,31,.55);display:flex;align-items:flex-start;
+    justify-content:center;padding:60px 16px;z-index:100}
+.modal{background:var(--card);border-radius:14px;width:100%;max-width:380px;padding:24px;
+       box-shadow:0 18px 50px rgba(0,0,0,.2)}
+.modal h3{font-size:19px;font-weight:600;margin-bottom:4px}
+.modal .lead{font-size:13px;color:var(--t2);margin-bottom:18px}
+.mf{margin-bottom:12px}
+.mf label{display:block;font-size:11px;color:var(--t3);margin-bottom:4px}
+.mf input{width:100%;border:1px solid var(--line);border-radius:9px;padding:10px 12px;
+          font-size:14px;outline:none;background:var(--card);color:var(--t1)}
+.mf input:focus{border-color:var(--leaf-d)}
+.mbtn{width:100%;background:var(--ink2);color:#fff;padding:12px;border-radius:9px;
+      font-size:14px;font-weight:500;margin-top:4px}
+.mbtn:disabled{background:#B4B2A9;cursor:not-allowed}
+.mlink{text-align:center;font-size:13px;color:var(--t2);margin-top:14px}
+.mlink b{color:var(--leaf-d);cursor:pointer;font-weight:500}
+.mmsg{border-radius:9px;padding:10px;font-size:12px;line-height:1.55;margin-bottom:12px}
+.mmsg.ok{background:var(--leaf-l);color:#1B4332}
+.mmsg.bad{background:var(--clay-l);color:var(--clay-d)}
+.mx{float:right;color:var(--t4);font-size:20px;line-height:1;cursor:pointer}
+.otp{letter-spacing:.32em;text-align:center;font-size:19px!important}
+.saveprompt{background:var(--leaf-l);border:1px solid var(--leaf-b);border-radius:12px;
+            padding:12px 14px;margin-bottom:14px;display:flex;justify-content:space-between;
+            align-items:center;gap:12px;flex-wrap:wrap;font-size:13px;color:#1B4332}
+.saveprompt button{background:var(--leaf-d);color:#fff;padding:8px 16px;border-radius:8px;font-size:13px}
+.hrow{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px;
+      margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap}
+.hrow .m{display:flex;gap:18px;flex-wrap:wrap}
+.hrow .m div{font-size:12px;color:var(--t3)}
+.hrow .m b{display:block;font-size:14px;color:var(--t1);font-weight:500}
+.hdel{color:var(--clay-d);font-size:12px}
+.empty{text-align:center;padding:44px 20px;color:var(--t3)}
+.empty h4{font-size:15px;color:var(--t1);margin-bottom:6px;font-weight:600}
+.empty p{font-size:13px;margin-bottom:14px}
 @media print{
-  .nav,.hbtns,.exp,.back,.foot,.go,.scen-box{display:none!important}
+  .nav,.hbtns,.exp,.back,.foot,.go,.scen-box,.ov,.saveprompt{display:none!important}
   body{background:#fff}.card,.crop{break-inside:avoid;border:1px solid #ddd}
 }
 </style>
@@ -198,7 +239,10 @@ h1{font-size:34px;line-height:1.18;font-weight:600;letter-spacing:-.6px;margin-b
     <a data-s="compare" onclick="nav('compare')">Compare</a>
     <a data-s="insights" onclick="nav('insights')">Insights</a>
     <a data-s="about" onclick="nav('about')">About</a>
-    <button class="cta" onclick="nav('home');document.getElementById('form').scrollIntoView({behavior:'smooth'})">Get started</button>
+    <a data-s="history" id="nav-hist" class="hide" onclick="nav('history')">History</a>
+    <span class="authbar" id="authbar">
+      <button class="cta" onclick="openAuth('signup')">Get started</button>
+    </span>
   </div>
 </div></nav>
 
@@ -331,12 +375,46 @@ h1{font-size:34px;line-height:1.18;font-weight:600;letter-spacing:-.6px;margin-b
   <div class="body"><div class="wrap" id="a-body"></div></div>
 </section>
 
+<!-- ===== HISTORY ===== -->
+<section id="s-history" class="hide">
+  <div class="rhead"><div class="wrap"><div class="rh-l"><div>
+    <div class="rh-t">Your history</div>
+    <div class="rh-s">Advisories you have saved</div></div></div></div></div>
+  <div class="body"><div class="wrap" id="h-body"></div></div>
+</section>
+
+<!-- ===== AUTH ===== -->
+<div id="auth" class="ov hide" onclick="if(event.target===this)closeAuth()">
+  <div class="modal">
+    <span class="mx" onclick="closeAuth()">&times;</span>
+    <h3 id="au-h">Create your account</h3>
+    <div class="lead" id="au-l">Save your advisories and come back to them later.</div>
+    <div id="au-msg"></div>
+
+    <div id="au-form">
+      <div class="mf" id="au-name-w"><label>Full name</label><input id="au-name" autocomplete="name"></div>
+      <div class="mf"><label>Email</label><input id="au-email" type="email" autocomplete="email" placeholder="name@example.com"></div>
+      <div class="mf"><label>Password</label><input id="au-pass" type="password" autocomplete="current-password" placeholder="at least 6 characters"></div>
+      <button class="mbtn" id="au-go" onclick="submitAuth()">Create account</button>
+      <div class="mlink" id="au-switch">Already have an account? <b onclick="openAuth('login')">Sign in</b></div>
+    </div>
+
+    <div id="au-otp" class="hide">
+      <div class="mf"><label>Six-digit code</label>
+        <input id="au-code" class="otp" inputmode="numeric" maxlength="6" placeholder="000000"></div>
+      <button class="mbtn" onclick="verifyOtp()">Verify and continue</button>
+      <div class="mlink">Didn't get it? <b onclick="resendOtp()">Send again</b></div>
+    </div>
+  </div>
+</div>
+
 <div class="foot">
   Built on six public sources &middot; MoAFW crop production, ICRISAT district database, DES cost and MSP<br>
   Historical demonstration, records end 2015 &middot;
   <a href="https://crop-advisory-api-yz0w.onrender.com/docs" target="_blank">API docs</a>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 const API='https://crop-advisory-api-yz0w.onrender.com';
 let CROPS=[],SCEN='normal',HEALTH=null,LAST=null,LASTCMP=null;
@@ -353,13 +431,14 @@ async function api(p,opt){
 }
 
 function nav(s){
-  ['home','res','compare','insights','about'].forEach(k=>
+  ['home','res','compare','insights','about','history'].forEach(k=>
     $('s-'+k).classList.toggle('hide',k!==s));
   document.querySelectorAll('.navlinks a').forEach(a=>
     a.classList.toggle('on',a.dataset.s===s||(s==='res'&&a.dataset.s==='home')));
   window.scrollTo(0,0);
   if(s==='insights') renderInsights();
   if(s==='about')    renderAbout();
+  if(s==='history') renderHistory();
   if(s==='compare'&&!$('c-st').options.length) cInit();
 }
 
@@ -439,8 +518,12 @@ async function run(){
         .catch(()=>null)
     ]);
     LAST=p; LASTCMP=cmp;
+    SAVED_ID=REOPEN;                /* reopened from history: already saved */
     renderResults(p,cmp,hist); nav('res');
+    if(USER&&!REOPEN) saveLast(true);
+    REOPEN=null;
   }catch(e){
+    REOPEN=null;
     $('ferr').innerHTML=`<div class="err"><b>Could not get a result</b><p>${e.message}</p></div>`;
   }finally{ $('run').disabled=false; $('run').textContent='Generate advisory'; }
 }
@@ -621,10 +704,11 @@ function renderResults(p,cmp,hist){
     <h3>What else could you grow here? <span class="r">ranked by suitability</span></h3>
     ${cmp.map((c,i)=>cropCard(c,i,i===0)).join('')}${C2NOTE}</div>`;
 
-  $('r-body').innerHTML=kpis
+  $('r-body').innerHTML='<div class="saveprompt" id="savebox"></div>'+kpis
     +`<div class="two">${trendChart(hist)||money}${riskCard}</div>`
     +(trendChart(hist)?`<div class="two">${money}${priceBar(p)}</div>`:priceBar(p))
     +adv+rank;
+  renderSavePrompt();
 }
 
 /* ---------- compare page ---------- */
@@ -783,7 +867,261 @@ function exportCsv(){
   a.click(); URL.revokeObjectURL(a.href);
 }
 
+
+/* ================= accounts, history ================= */
+const SB_URL='https://xnmpaqtbltocdjmshuxo.supabase.co';
+const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhubXBhcXRibHRvY2RqbXNodXhvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA2Nzg4NzIsImV4cCI6MjEwNjI1NDg3Mn0.tC_qSp5OuWxu0LP1cDQX1EN_H-DelZuh9MQg2LaEDzY';
+/* If the Supabase script fails to load, accounts switch off but the
+   advisory tool keeps working. */
+const SB=(window.supabase&&window.supabase.createClient)
+  ? window.supabase.createClient(SB_URL,SB_KEY) : null;
+let USER=null,AUMODE='signup',PEMAIL='',SAVED_ID=null,HIST=[],REOPEN=null;
+
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function amsg(t,cls){ $('au-msg').innerHTML=t?`<div class="mmsg ${cls||'bad'}">${esc(t)}</div>`:''; }
+
+function openAuth(mode){
+  if(!SB){ alert('Accounts are unavailable right now — the sign-in service did not load. Everything else still works.'); return; }
+  AUMODE=mode||'signup';
+  const su=AUMODE==='signup';
+  $('auth').classList.remove('hide');
+  $('au-form').classList.remove('hide');
+  $('au-otp').classList.add('hide');
+  amsg('');
+  $('au-h').textContent=su?'Create your account':'Welcome back';
+  $('au-l').textContent=su?'Save your advisories and come back to them later.'
+                          :'Sign in to see everything you have saved.';
+  $('au-name-w').classList.toggle('hide',!su);
+  $('au-go').textContent=su?'Create account':'Sign in';
+  $('au-pass').setAttribute('autocomplete',su?'new-password':'current-password');
+  $('au-switch').innerHTML=su
+    ? `Already have an account? <b onclick="openAuth('login')">Sign in</b>`
+    : `New here? <b onclick="openAuth('signup')">Create an account</b>`;
+  setTimeout(()=>{const f=$(su?'au-name':'au-email'); if(f) f.focus();},60);
+}
+function closeAuth(){ $('auth').classList.add('hide'); }
+
+async function submitAuth(){
+  const email=$('au-email').value.trim().toLowerCase();
+  const pass=$('au-pass').value;
+  const name=$('au-name').value.trim();
+  if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return amsg('Enter a valid email address.');
+  if(pass.length<6) return amsg('Your password needs at least six characters.');
+  if(AUMODE==='signup'&&!name) return amsg('Tell us your name.');
+  const btn=$('au-go'), label=btn.textContent;
+  btn.disabled=true; btn.textContent='Please wait…'; amsg('');
+  try{
+    if(AUMODE==='signup'){
+      const {data,error}=await SB.auth.signUp(
+        {email,password:pass,options:{data:{full_name:name}}});
+      if(error) throw error;
+      PEMAIL=email;
+      if(data.session){ await afterLogin(); return; }
+      showOtp(email);
+    }else{
+      const {error}=await SB.auth.signInWithPassword({email,password:pass});
+      if(error){
+        if(/confirm/i.test(error.message||'')){
+          PEMAIL=email;
+          try{ await SB.auth.resend({type:'signup',email}); }catch(e){}
+          showOtp(email,'Your email is not verified yet, so we have sent a fresh code.');
+          return;
+        }
+        throw error;
+      }
+      await afterLogin();
+    }
+  }catch(e){ amsg(e.message||'Something went wrong. Try again.'); }
+  finally{ btn.disabled=false; btn.textContent=label; }
+}
+
+function showOtp(email,note){
+  $('au-form').classList.add('hide');
+  $('au-otp').classList.remove('hide');
+  $('au-h').textContent='Check your email';
+  $('au-l').innerHTML=`We sent a six-digit code to <b>${esc(email)}</b>. It is good for one hour.`;
+  amsg(note||'','ok');
+  $('au-code').value='';
+  setTimeout(()=>$('au-code').focus(),60);
+}
+
+async function verifyOtp(){
+  const token=$('au-code').value.replace(/\D/g,'');
+  if(token.length!==6) return amsg('Enter the six digits from the email.');
+  const btn=$('au-otp').querySelector('.mbtn');
+  btn.disabled=true; btn.textContent='Verifying…'; amsg('');
+  try{
+    let r=await SB.auth.verifyOtp({email:PEMAIL,token,type:'signup'});
+    if(r.error) r=await SB.auth.verifyOtp({email:PEMAIL,token,type:'email'});
+    if(r.error) throw r.error;
+    await afterLogin();
+  }catch(e){ amsg(e.message||'That code did not work. Ask for a new one.'); }
+  finally{ btn.disabled=false; btn.textContent='Verify and continue'; }
+}
+
+async function resendOtp(){
+  try{
+    const {error}=await SB.auth.resend({type:'signup',email:PEMAIL});
+    if(error) throw error;
+    amsg('A new code is on its way.','ok');
+  }catch(e){ amsg(e.message||'Could not send another code just now.'); }
+}
+
+async function afterLogin(){
+  const {data}=await SB.auth.getUser();
+  USER=data?data.user:null;
+  closeAuth(); paintAuth();
+  if(LAST&&!SAVED_ID) await saveLast(true);
+}
+
+function paintAuth(){
+  const bar=$('authbar'); if(!bar) return;
+  $('nav-hist').classList.toggle('hide',!USER);
+  if(USER){
+    const nm=(USER.user_metadata&&USER.user_metadata.full_name)||USER.email||'You';
+    bar.innerHTML=`<span class="who"><span class="av">${esc(nm.trim()[0].toUpperCase())}</span>${esc(nm)}</span>`
+      +`<button class="ghost" onclick="signOut()">Sign out</button>`;
+  }else{
+    bar.innerHTML=`<button class="cta" onclick="openAuth('signup')">Get started</button>`;
+  }
+  renderSavePrompt();
+}
+
+async function signOut(){
+  try{ await SB.auth.signOut(); }catch(e){}
+  USER=null; SAVED_ID=null; HIST=[];
+  paintAuth();
+  if(!$('s-history').classList.contains('hide')) nav('home');
+}
+
+async function initAuth(){
+  if(!SB){ $('nav-hist').classList.add('hide'); $('authbar').innerHTML=''; return; }
+  try{
+    const {data}=await SB.auth.getSession();
+    USER=data&&data.session?data.session.user:null;
+  }catch(e){ USER=null; }
+  paintAuth();
+  SB.auth.onAuthStateChange((_ev,sess)=>{
+    const was=USER?USER.id:null;
+    USER=sess?sess.user:null;
+    if((USER?USER.id:null)!==was) paintAuth();
+  });
+}
+
+/* ---------- saving ---------- */
+function renderSavePrompt(){
+  const el=$('savebox'); if(!el) return;
+  if(!SB){ el.classList.add('hide'); return; }
+  if(!USER){
+    el.innerHTML=`<span>Sign in to keep this advisory in your history.</span>`
+      +`<button onclick="openAuth('login')">Sign in to save</button>`;
+  }else if(SAVED_ID){
+    el.innerHTML=`<span>Saved to your history.</span>`
+      +`<button onclick="nav('history')">View history</button>`;
+  }else{
+    el.innerHTML=`<span>Keep this advisory in your account.</span>`
+      +`<button onclick="saveLast()">Save to history</button>`;
+  }
+}
+
+async function saveLast(quiet){
+  if(!SB||!USER||!LAST||SAVED_ID) return;
+  const el=$('savebox');
+  if(el) el.innerHTML='<span>Saving…</span>';
+  const p=LAST;
+  const row={user_id:USER.id,state:p.state,district:p.district,crop:p.crop,season:p.season,
+    scenario:p.scenario,area_ha:p.area_ha,yield_t_ha:p.yield_t_ha,yield_low:p.yield_low,
+    yield_high:p.yield_high,total_tonnes:p.total_tonnes,
+    price_rs_qtl:p.price_rs_qtl??null,cost_rs_ha:p.cost_rs_ha??null,
+    profit_rs_ha:p.profit_rs_ha??null,risk_score:p.risk_score??null,
+    suitability_score:p.suitability_score??null,payload:p};
+  try{
+    const {data,error}=await SB.from('prediction_history').insert(row).select('id').single();
+    if(error) throw error;
+    SAVED_ID=data.id; HIST=[]; renderSavePrompt();
+  }catch(e){
+    if(el) el.innerHTML=`<span>Could not save: ${esc(e.message||'unknown error')}</span>`
+      +`<button onclick="renderSavePrompt()">Try again</button>`;
+    if(quiet) console.warn('save failed',e);
+  }
+}
+
+/* ---------- history screen ---------- */
+function emptyBox(h,p,label,fn){
+  return `<div class="empty"><h4>${esc(h)}</h4><p>${esc(p)}</p>
+    <button class="cta" onclick="${fn}">${esc(label)}</button></div>`;
+}
+
+async function renderHistory(){
+  const b=$('h-body');
+  if(!SB){ b.innerHTML='<div class="err"><b>Accounts unavailable</b><p>The sign-in service did not load.</p></div>'; return; }
+  if(!USER){
+    b.innerHTML=emptyBox('Sign in to see your history',
+      'Saved advisories live in your account, so you can open them from any device.',
+      'Sign in',"openAuth('login')");
+    return;
+  }
+  b.innerHTML='<div class="empty"><p>Loading…</p></div>';
+  try{
+    const {data,error}=await SB.from('prediction_history')
+      .select('*').order('created_at',{ascending:false}).limit(100);
+    if(error) throw error;
+    HIST=data||[];
+    if(!HIST.length){
+      b.innerHTML=emptyBox('Nothing saved yet',
+        'Generate an advisory and save it — it will show up here.',
+        'Generate one',"nav('home')");
+      return;
+    }
+    b.innerHTML=HIST.map(hrow).join('');
+  }catch(e){
+    b.innerHTML=`<div class="err"><b>Could not load your history</b><p>${esc(e.message||'')}</p></div>`;
+  }
+}
+
+function hrow(r,i){
+  const d=r.created_at?new Date(r.created_at):null;
+  const when=d?d.toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'})
+               +' · '+d.toLocaleTimeString('en-IN',{hour:'numeric',minute:'2-digit'}):'';
+  const pf=r.profit_rs_ha==null?'—':(r.profit_rs_ha>=0?'+':'−')+rs(Math.abs(r.profit_rs_ha));
+  return `<div class="hrow">
+    <div class="m">
+      <div><b>${esc(title(r.crop))} · ${esc(title(r.season))}</b>${esc(title(r.district||''))}, ${esc(title(r.state||''))}</div>
+      <div><b>${r.yield_t_ha??'—'} t/ha</b>${esc(r.scenario||'')} monsoon · ${r.area_ha??1} ha</div>
+      <div><b class="${r.profit_rs_ha>=0?'pos':'neg'}">${pf}</b>per ha</div>
+      <div><b>${r.risk_score??'—'}</b>risk${when?' · '+esc(when):''}</div>
+    </div>
+    <div class="hbtns">
+      <button class="cta" onclick="openSaved(${i})">Open</button>
+      <button class="hdel" onclick="delSaved('${esc(r.id)}')">Delete</button>
+    </div></div>`;
+}
+
+async function delSaved(id){
+  try{
+    const {error}=await SB.from('prediction_history').delete().eq('id',id);
+    if(error) throw error;
+    if(String(SAVED_ID)===String(id)){ SAVED_ID=null; renderSavePrompt(); }
+    await renderHistory();
+  }catch(e){ alert('Could not delete: '+(e.message||'')); }
+}
+
+async function openSaved(i){
+  const r=HIST[i]; if(!r) return;
+  REOPEN=r.id;
+  nav('home');
+  $('st').value=r.state; await onState();
+  $('di').value=r.district; await onDistrict();
+  const k=CROPS.findIndex(x=>x.crop===r.crop&&x.season===r.season);
+  if(k>=0){ $('cr').value=k; }
+  $('ar').value=r.area_ha||1;
+  setScen(r.scenario||'normal');
+  await run();
+}
+
+
 boot();
+initAuth();
 </script>
 </body>
 </html>
