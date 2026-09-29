@@ -400,8 +400,8 @@ h1{font-size:34px;line-height:1.18;font-weight:600;letter-spacing:-.6px;margin-b
     </div>
 
     <div id="au-otp" class="hide">
-      <div class="mf"><label>Six-digit code</label>
-        <input id="au-code" class="otp" inputmode="numeric" maxlength="6" placeholder="000000"></div>
+      <div class="mf"><label>Verification code</label>
+        <input id="au-code" class="otp" inputmode="numeric" maxlength="10" placeholder="000000"></div>
       <button class="mbtn" onclick="verifyOtp()">Verify and continue</button>
       <div class="mlink">Didn't get it? <b onclick="resendOtp()">Send again</b></div>
     </div>
@@ -939,7 +939,7 @@ function showOtp(email,note){
   $('au-form').classList.add('hide');
   $('au-otp').classList.remove('hide');
   $('au-h').textContent='Check your email';
-  $('au-l').innerHTML=`We sent a six-digit code to <b>${esc(email)}</b>. It is good for one hour.`;
+  $('au-l').innerHTML=`We sent a verification code to <b>${esc(email)}</b>. It is good for one hour.`;
   amsg(note||'','ok');
   $('au-code').value='';
   setTimeout(()=>$('au-code').focus(),60);
@@ -947,7 +947,7 @@ function showOtp(email,note){
 
 async function verifyOtp(){
   const token=$('au-code').value.replace(/\D/g,'');
-  if(token.length!==6) return amsg('Enter the six digits from the email.');
+  if(token.length<6) return amsg('Enter the full code from the email.');
   const btn=$('au-otp').querySelector('.mbtn');
   btn.disabled=true; btn.textContent='Verifying…'; amsg('');
   try{
