@@ -3,493 +3,556 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>KrishiDSS · Crop planning for Indian districts</title>
+<title>KrishiDSS — Crop planning decision support for Indian districts</title>
 <meta name="description" content="Yield, cost and risk estimates for Indian district-crop combinations, built on six public government and research datasets.">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='9' fill='%231F7A4D'/%3E%3Cpath d='M16 25V13M16 13c0-4-3-7-7-7 0 4 3 7 7 7zm0 2c0-3.5 2.6-6 6-6 0 3.4-2.6 6-6 6z' stroke='%23fff' stroke-width='2' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%2314432C'/%3E%3Cpath d='M16 25V13M16 13c0-4-3-7-7-7 0 4 3 7 7 7zm0 2c0-3.5 2.6-6 6-6 0 3.4-2.6 6-6 6z' stroke='%23fff' stroke-width='2' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
 <style>
-/* ============================================================
-   KrishiDSS design tokens
+/* ==========================================================================
+   KrishiDSS
+   Design language: public-sector information service. Restrained institutional
+   palette, full-width navigation with an underline indicator, breadcrumbs,
+   banner masthead, topic grid, charcoal footer.
    Chart series colours are validated as a categorical palette:
-   #1F7A4D #C98A00 #C2410C #2E6FD6 — CVD-separated, chroma-safe.
-   Neutral #6B7A70 is for axes and reference lines only, never a series.
-   ============================================================ */
+   #1F7A4D #C98A00 #C2410C #2E6FD6 — CVD-separated, chroma-safe, contrast-checked.
+   ========================================================================== */
 :root{
-  --g900:#0C2418; --g800:#123420; --g700:#19492F; --g600:#1F7A4D;
-  --g500:#2E9B66; --g400:#4FB983; --g300:#8FD4B0;
-  --g100:#E1F1E8; --g050:#F1F8F4;
+  --sage:#B7CCBE; --sage-l:#DFE8E0; --sage-xl:#F0F4F0; --sage-d:#8BA994;
+  --deep:#14432C; --deep2:#0E3320; --deep3:#1D5A3B;
+  --accent:#C2410C;                     /* active indicator, alerts */
+  --char:#33342F; --char2:#45463F;
+  --link:#175A3A; --link-h:#0E3320;
+
+  --g600:#1F7A4D; --g500:#2E9B66; --g100:#E1F1E8; --g050:#F2F8F4;
   --gold:#C98A00; --gold-l:#FBF3DE; --gold-b:#EEDCA8;
   --clay:#C2410C; --clay-l:#FBEBE4; --clay-b:#F2C9B6;
   --blue:#2E6FD6; --blue-l:#E8EFFC;
-  --neutral:#6B7A70;
+  --neutral:#9AA69D;
 
-  --page:#F6F8F5; --card:#FFFFFF; --sunk:#F0F4F0;
-  --line:#E3E9E3; --line2:#EEF2ED;
-  --t1:#12211A; --t2:#4E5C53; --t3:#75847A; --t4:#9AA69D;
-
-  --sh-s:0 1px 2px rgba(12,36,24,.05);
-  --sh-m:0 2px 8px rgba(12,36,24,.06),0 1px 2px rgba(12,36,24,.04);
-  --sh-l:0 12px 32px rgba(12,36,24,.10),0 2px 8px rgba(12,36,24,.05);
-  --r-s:10px; --r-m:14px; --r-l:20px;
+  --bg:#FFFFFF; --bg2:#F5F7F4; --bg3:#EDF1EC;
+  --line:#D4DAD3; --line2:#E6EAE4;
+  --t1:#1A1B17; --t2:#4C4E47; --t3:#6E7069; --t4:#8D8F87;
+  --r:3px;
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html{scroll-behavior:smooth}
-body{font-family:Inter,system-ui,-apple-system,sans-serif;background:var(--page);color:var(--t1);
-     line-height:1.55;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+body{font-family:'Public Sans',system-ui,-apple-system,Segoe UI,sans-serif;background:var(--bg);
+     color:var(--t1);line-height:1.6;-webkit-font-smoothing:antialiased;font-size:16px}
 button{font:inherit;cursor:pointer;border:none;background:none;color:inherit}
 input,select{font:inherit;color:inherit}
 a{color:inherit;text-decoration:none}
 .hide{display:none!important}
-.wrap{max-width:1140px;margin:0 auto;padding:0 24px}
-@media(max-width:600px){.wrap{padding:0 16px}}
-.dsp{font-family:Outfit,Inter,sans-serif;letter-spacing:-.02em;line-height:1.1}
+.wrap{max-width:1216px;margin:0 auto;padding:0 28px}
+@media(max-width:620px){.wrap{padding:0 18px}}
+:focus-visible{outline:3px solid var(--accent);outline-offset:1px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 
-/* ---------- focus ---------- */
-:focus-visible{outline:2px solid var(--g600);outline-offset:2px;border-radius:4px}
+/* ============================ UTILITY BAR ============================ */
+.util{background:var(--sage);border-bottom:1px solid var(--sage-d)}
+.util .wrap{display:flex;align-items:center;justify-content:space-between;gap:24px;padding-top:14px;padding-bottom:14px}
+.ident{display:flex;align-items:center;gap:13px;cursor:pointer}
+.crest{width:46px;height:46px;flex:none;background:var(--deep);display:grid;place-items:center}
+.crest svg{width:25px;height:25px;stroke:#fff;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.idt{line-height:1.25}
+.idt .n1{font-size:19px;font-weight:700;letter-spacing:-.01em;color:var(--deep2)}
+.idt .n2{font-size:12.5px;color:#3D5546;border-top:1px solid var(--sage-d);padding-top:3px;margin-top:2px;max-width:30ch}
+.ulinks{display:flex;align-items:center;gap:0;font-size:13px;color:#2B4434;flex-wrap:wrap;justify-content:flex-end}
+.ulinks a{padding:0 11px;border-right:1px solid var(--sage-d);cursor:pointer;white-space:nowrap}
+.ulinks a:last-child{border-right:none;padding-right:0}
+.ulinks a:hover{text-decoration:underline}
+.uacct{display:flex;align-items:center;gap:10px;margin-left:16px;padding-left:16px;border-left:1px solid var(--sage-d)}
+.who{display:flex;align-items:center;gap:9px}
+.wt{line-height:1.2;text-align:right}
+.wn{font-size:13px;font-weight:600;color:var(--deep2);max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ws{font-size:11px;color:#3D5546}
+.av{width:32px;height:32px;flex:none;display:grid;place-items:center;background:var(--deep);
+    color:#fff;font-size:13px;font-weight:600;border-radius:50%}
+.iconbtn{width:32px;height:32px;display:grid;place-items:center;border:1px solid var(--sage-d);background:rgba(255,255,255,.5)}
+.iconbtn:hover{background:#fff}
+.iconbtn svg{width:16px;height:16px;stroke:var(--deep2);fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
 
-/* ============================ HEADER ============================ */
-.hdr{position:sticky;top:0;z-index:60;background:rgba(255,255,255,.86);
-     backdrop-filter:saturate(180%) blur(14px);border-bottom:1px solid var(--line)}
-.hdr .wrap{display:flex;align-items:center;gap:20px;height:72px}
-.brand{display:flex;align-items:center;gap:11px;cursor:pointer;flex:none}
-.mark{width:38px;height:38px;border-radius:11px;flex:none;display:grid;place-items:center;
-      background:linear-gradient(145deg,var(--g600),var(--g700));box-shadow:var(--sh-m)}
-.mark svg{width:20px;height:20px;stroke:#fff;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
-.bname{font-family:Outfit,Inter,sans-serif;font-weight:600;font-size:18px;letter-spacing:-.02em;line-height:1.15}
-.btag{font-size:11px;color:var(--t3);line-height:1.2}
-
-/* pill nav */
-.pillnav{display:flex;gap:2px;background:var(--sunk);padding:4px;border-radius:99px;margin:0 auto}
-.pillnav a{padding:8px 17px;border-radius:99px;font-size:14px;font-weight:500;color:var(--t2);
-           cursor:pointer;white-space:nowrap;transition:background .15s,color .15s}
-.pillnav a:hover{color:var(--t1)}
-.pillnav a.on{background:var(--g700);color:#fff;box-shadow:var(--sh-s)}
-
-.hright{display:flex;align-items:center;gap:12px;flex:none;margin-left:auto}
-.who{display:flex;align-items:center;gap:10px}
-.who .wt{text-align:right;line-height:1.25}
-.who .wn{font-size:13px;font-weight:600;max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.who .ws{font-size:11px;color:var(--t3)}
-.av{width:36px;height:36px;border-radius:50%;flex:none;display:grid;place-items:center;
-    background:linear-gradient(145deg,var(--g500),var(--g700));color:#fff;font-size:14px;font-weight:600}
-.iconbtn{width:36px;height:36px;border-radius:10px;border:1px solid var(--line);display:grid;
-         place-items:center;background:var(--card);transition:background .15s,border-color .15s}
-.iconbtn:hover{background:var(--sunk);border-color:var(--t4)}
-.iconbtn svg{width:17px;height:17px;stroke:var(--t2);fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
-
-.btn{border-radius:10px;font-weight:500;font-size:14px;padding:10px 18px;white-space:nowrap;
-     transition:background .15s,box-shadow .15s,transform .06s}
-.btn:active{transform:translateY(1px)}
-.btn-p{background:var(--g700);color:#fff;box-shadow:var(--sh-s)}
-.btn-p:hover{background:var(--g800)}
-.btn-p:disabled{background:#9DB3A6;cursor:not-allowed;box-shadow:none}
-.btn-g{border:1px solid var(--line);background:var(--card);color:var(--t1)}
-.btn-g:hover{background:var(--sunk)}
-.btn-q{color:var(--t2)}
-.btn-q:hover{color:var(--t1);background:var(--sunk)}
-
-@media(max-width:1000px){
-  .hdr .wrap{height:64px;gap:12px}
-  .pillnav{order:3;width:100%;margin:0;overflow-x:auto;justify-content:flex-start;
-           border-radius:0;background:none;padding:8px 0 0}
-  .hdr .wrap{flex-wrap:wrap;height:auto;padding-top:12px;padding-bottom:0}
-  .pillnav a{padding:7px 13px;font-size:13px;background:var(--sunk)}
-  .btag{display:none}
-}
-@media(max-width:560px){
-  .who .wt{display:none}
-  .hright .btn-q{display:none}       /* sign-in is reachable from the account page */
-  .hright .btn{padding:9px 15px;font-size:13.5px}
+/* ============================ MAIN NAV ============================ */
+.mainnav{background:#fff;border-bottom:1px solid var(--line);position:sticky;top:0;z-index:60}
+.mainnav .wrap{display:flex;align-items:stretch;gap:0}
+.mainnav a{flex:1;text-align:center;padding:17px 10px 15px;font-size:15px;font-weight:600;
+           color:var(--t1);cursor:pointer;border-top:4px solid transparent;white-space:nowrap;
+           transition:background .12s,border-color .12s}
+.mainnav a:hover{background:var(--bg2)}
+.mainnav a.on{border-top-color:var(--accent);background:var(--bg2)}
+@media(max-width:900px){
+  .mainnav .wrap{overflow-x:auto;padding-left:14px;padding-right:14px}
+  .mainnav a{flex:none;padding:14px 15px 12px;font-size:14px}
+  .util .wrap{flex-direction:column;align-items:flex-start;gap:12px}
+  .ulinks{justify-content:flex-start;font-size:12.5px}
+  .uacct{margin-left:0;padding-left:0;border-left:none}
+  .idt .n2{max-width:none}
 }
 
-/* ============================ AUTH PAGE ============================ */
-.auth{min-height:100vh;display:grid;grid-template-columns:1fr 1fr}
-.auth-l{display:flex;align-items:center;justify-content:center;padding:48px 32px;background:var(--card)}
-.auth-box{width:100%;max-width:392px}
-.auth-box .brand{margin-bottom:38px}
-.auth-h{font-size:32px;font-weight:600;letter-spacing:-.02em;margin-bottom:8px;font-family:Outfit,Inter,sans-serif}
-.auth-s{font-size:14px;color:var(--t2);margin-bottom:28px;line-height:1.6}
-.fld{margin-bottom:15px}
-.fld label{display:block;font-size:12px;font-weight:500;color:var(--t2);margin-bottom:6px}
-.fld input{width:100%;border:1px solid var(--line);border-radius:var(--r-s);padding:12px 14px;
-           font-size:15px;outline:none;background:var(--card);transition:border-color .15s,box-shadow .15s}
-.fld input::placeholder{color:var(--t4)}
-.fld input:focus{border-color:var(--g500);box-shadow:0 0 0 3px var(--g100)}
-.wbtn{width:100%;padding:13px;font-size:15px;margin-top:8px;border-radius:var(--r-s)}
-.swap{text-align:center;font-size:14px;color:var(--t2);margin-top:20px}
-.swap b{color:var(--g600);cursor:pointer;font-weight:600}
-.swap b:hover{text-decoration:underline}
-.msg{border-radius:var(--r-s);padding:11px 13px;font-size:13px;line-height:1.55;margin-bottom:16px;
-     display:flex;gap:9px;align-items:flex-start}
-.msg svg{width:15px;height:15px;flex:none;margin-top:2px;stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round}
-.msg.ok{background:var(--g050);color:var(--g700);border:1px solid var(--g100)}
-.msg.ok svg{stroke:var(--g600)}
-.msg.bad{background:var(--clay-l);color:#8A2F0A;border:1px solid var(--clay-b)}
-.msg.bad svg{stroke:var(--clay)}
-.otp{letter-spacing:.42em;text-align:center;font-size:22px!important;font-weight:600;padding-left:14px}
-.backlink{font-size:13px;color:var(--t3);margin-top:26px;display:inline-flex;align-items:center;gap:6px;cursor:pointer}
-.backlink:hover{color:var(--t1)}
-.backlink svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+/* ============================ BUTTONS ============================ */
+.btn{display:inline-flex;align-items:center;gap:9px;border-radius:var(--r);font-weight:600;
+     font-size:15px;padding:11px 22px;border:2px solid transparent;transition:background .13s,border-color .13s}
+.btn svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.btn-p{background:var(--deep);color:#fff;border-color:var(--deep)}
+.btn-p:hover{background:var(--deep2);border-color:var(--deep2)}
+.btn-p:disabled{background:#8A9A90;border-color:#8A9A90;cursor:not-allowed}
+.btn-g{background:#fff;color:var(--deep);border-color:var(--deep)}
+.btn-g:hover{background:var(--sage-xl)}
+.btn-q{color:var(--link);padding:11px 14px}
+.btn-q:hover{text-decoration:underline}
+.btn-w{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.4);color:#fff;
+       padding:9px 16px;border-radius:var(--r);font-size:13.5px;font-weight:600}
+.btn-w:hover{background:rgba(255,255,255,.26)}
+.btn-sm{font-size:13.5px;padding:8px 15px}
 
-.auth-r{background:linear-gradient(155deg,var(--g800) 0%,var(--g900) 55%,#081A11 100%);
-        color:#fff;padding:56px 48px;display:flex;flex-direction:column;justify-content:center;position:relative;overflow:hidden}
-.auth-r::after{content:"";position:absolute;width:520px;height:520px;right:-190px;top:-160px;border-radius:50%;
-               background:radial-gradient(circle,rgba(79,185,131,.20),transparent 68%)}
-.auth-r>*{position:relative;z-index:1}
-.eyebrow{font-size:12px;font-weight:500;color:var(--g300);margin-bottom:18px;
-         display:flex;align-items:center;gap:8px;letter-spacing:.01em}
-.eyebrow i{width:6px;height:6px;border-radius:50%;background:var(--g400);flex:none}
-.auth-r h2{font-family:Outfit,Inter,sans-serif;font-size:34px;font-weight:600;line-height:1.2;
-           letter-spacing:-.02em;margin-bottom:16px;max-width:15ch}
-.auth-r p{font-size:14px;color:#B4D4C1;line-height:1.7;max-width:46ch;margin-bottom:30px}
-.tiles{display:grid;grid-template-columns:1fr 1fr;gap:12px;max-width:430px}
-.tile{background:rgba(255,255,255,.055);border:1px solid rgba(255,255,255,.10);
-      border-radius:var(--r-m);padding:16px 18px}
-.tile b{display:block;font-family:Outfit,Inter,sans-serif;font-size:26px;font-weight:600;letter-spacing:-.02em}
-.tile span{font-size:12px;color:#9DC2AD}
-.auth-r .foot-n{font-size:11.5px;color:#7FA790;margin-top:30px;max-width:44ch;line-height:1.65}
-@media(max-width:940px){ .auth{grid-template-columns:1fr} .auth-r{display:none} }
+/* ============================ BREADCRUMB ============================ */
+.crumb{background:var(--bg2);border-bottom:1px solid var(--line);font-size:13.5px;color:var(--t2)}
+.crumb .wrap{padding-top:11px;padding-bottom:11px}
+.crumb a{color:var(--link);font-weight:600;cursor:pointer}
+.crumb a:hover{text-decoration:underline}
+.crumb span{color:var(--t3)}
 
-/* ============================ HERO ============================ */
-.hero{position:relative;overflow:hidden;
-      background:
-        radial-gradient(900px 440px at 88% -12%,rgba(79,185,131,.20),transparent 62%),
-        radial-gradient(700px 380px at 6% 104%,rgba(46,111,214,.07),transparent 60%),
-        linear-gradient(180deg,#FAFCFA,var(--page))}
-.hero .wrap{padding:66px 24px 54px}
-.hgrid{display:grid;grid-template-columns:1.06fr .94fr;gap:56px;align-items:center}
-@media(max-width:940px){.hgrid{grid-template-columns:1fr;gap:34px}.hero .wrap{padding:44px 20px 40px}}
-.eyebrow.dk{color:var(--g600)}
-.eyebrow.dk i{background:var(--g500)}
-h1{font-family:Outfit,Inter,sans-serif;font-size:56px;font-weight:600;letter-spacing:-.032em;
-   line-height:1.04;margin-bottom:20px}
-h1 .accent{color:var(--g600);display:block}
-@media(max-width:1000px){h1{font-size:46px}}
-@media(max-width:600px){h1{font-size:35px}}
-.lead{font-size:16.5px;color:var(--t2);line-height:1.7;max-width:50ch;margin-bottom:28px}
-.hbtns{display:flex;gap:11px;flex-wrap:wrap;align-items:center}
-.btn-xl{padding:14px 26px;font-size:15.5px;border-radius:12px}
-.hnote{font-size:12.5px;color:var(--t3);margin-top:20px}
+/* ============================ MASTHEAD BANNER ============================ */
+.banner{position:relative;overflow:hidden;background:var(--deep2);min-height:430px;display:flex;align-items:center}
+.banner svg.art{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.banner .scrim{position:absolute;inset:0;
+  background:linear-gradient(95deg,rgba(8,30,19,.94) 0%,rgba(8,30,19,.86) 44%,rgba(8,30,19,.50) 78%,rgba(8,30,19,.30) 100%)}
+.banner .wrap{position:relative;z-index:2;padding-top:56px;padding-bottom:56px}
+.bpanel{max-width:620px}
+.kicker{display:inline-block;background:var(--accent);color:#fff;font-size:11.5px;font-weight:700;
+        letter-spacing:.09em;text-transform:uppercase;padding:5px 11px;margin-bottom:20px}
+.banner h1{font-size:50px;font-weight:300;line-height:1.1;letter-spacing:-.018em;color:#fff;margin-bottom:18px}
+.banner h1 b{font-weight:700;display:block}
+.banner p{font-size:17.5px;color:#CFE0D5;line-height:1.62;max-width:52ch;margin-bottom:26px;font-weight:300}
+.bbtns{display:flex;gap:13px;flex-wrap:wrap}
+.banner .bnote{font-size:13px;color:#9CBBA8;margin-top:22px;max-width:56ch}
+@media(max-width:820px){.banner h1{font-size:36px}.banner p{font-size:16px}
+  .banner .scrim{background:linear-gradient(180deg,rgba(6,26,16,.78),rgba(6,26,16,.93))}}
 
-/* hero stat card */
-.hcard{background:var(--card);border:1px solid var(--line);border-radius:var(--r-l);
-       padding:30px 32px;box-shadow:var(--sh-l)}
-.hcard .lab{font-size:12px;font-weight:600;color:var(--g600);margin-bottom:14px}
-.hcard .big{font-family:Outfit,Inter,sans-serif;font-size:62px;font-weight:700;line-height:1;
-            letter-spacing:-.035em;color:var(--g700);margin-bottom:10px}
-.hcard .cap{font-size:16px;font-weight:500;line-height:1.45;margin-bottom:20px;letter-spacing:-.01em}
-.blocks{display:flex;gap:4px;margin-bottom:12px}
-.blocks i{flex:1;height:26px;border-radius:5px;background:var(--g100)}
-.blocks i.f{background:var(--g600)}
-.hcard .sub{font-size:12.5px;color:var(--t3);line-height:1.6}
-
-/* stat strip */
-.strip{border-top:1px solid var(--line);background:rgba(255,255,255,.55)}
-.strip .wrap{display:grid;grid-template-columns:repeat(4,1fr);padding:0 24px}
-.sitem{padding:22px 0 22px 26px;border-left:1px solid var(--line)}
-.sitem:first-child{border-left:none;padding-left:0}
-.sitem b{display:block;font-family:Outfit,Inter,sans-serif;font-size:26px;font-weight:600;letter-spacing:-.02em}
-.sitem span{font-size:12px;color:var(--t3)}
-@media(max-width:700px){.strip .wrap{grid-template-columns:1fr 1fr;gap:0}
-  .sitem{padding:16px 0 16px 18px}.sitem:nth-child(3){border-left:none;padding-left:0}
-  .sitem:nth-child(3),.sitem:nth-child(4){border-top:1px solid var(--line)}}
+/* page banner (interior pages) */
+.pbanner{position:relative;overflow:hidden;background:var(--deep2);color:#fff}
+.pbanner svg.art{position:absolute;inset:0;width:100%;height:100%}
+.pbanner .scrim{position:absolute;inset:0;background:linear-gradient(95deg,rgba(8,30,19,.94),rgba(8,30,19,.70))}
+.pbanner .wrap{position:relative;z-index:2;padding-top:40px;padding-bottom:40px;
+               display:flex;align-items:flex-end;justify-content:space-between;gap:22px;flex-wrap:wrap}
+.pb-t{font-size:36px;font-weight:300;letter-spacing:-.015em;line-height:1.15}
+.pb-s{font-size:15.5px;color:#BFD6C8;margin-top:8px;max-width:62ch;font-weight:300}
+.pb-r{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.chipd{background:rgba(255,255,255,.13);border:1px solid rgba(255,255,255,.34);color:#DCEBE1;
+       padding:7px 13px;font-size:12.5px;font-weight:600;border-radius:var(--r);white-space:nowrap}
+@media(max-width:620px){.pb-t{font-size:27px}}
 
 /* ============================ SECTIONS ============================ */
-.body{padding:52px 0 72px;min-height:48vh}
-.shead{margin-bottom:26px}
-.shead h2{font-family:Outfit,Inter,sans-serif;font-size:28px;font-weight:600;letter-spacing:-.024em;margin-bottom:7px}
-.shead p{font-size:14.5px;color:var(--t2);max-width:64ch;line-height:1.65}
+.sect{padding:56px 0}
+.sect.alt{background:var(--bg2);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.sect.tight{padding:40px 0}
+h2.sh{font-size:31px;font-weight:300;letter-spacing:-.018em;line-height:1.2;margin-bottom:10px}
+h2.sh b{font-weight:700}
+.sh-p{font-size:16px;color:var(--t2);max-width:68ch;line-height:1.65;margin-bottom:30px}
+h3.sub{font-size:20px;font-weight:600;margin-bottom:12px;letter-spacing:-.01em}
 
-/* page header bar (results, history, etc) */
-.phead{background:linear-gradient(140deg,var(--g800),var(--g900));color:#fff;padding:26px 0}
-.phead .wrap{display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap}
-.ph-l{display:flex;align-items:center;gap:15px}
-.ph-back{width:36px;height:36px;border-radius:10px;border:1px solid rgba(255,255,255,.18);
-         display:grid;place-items:center;flex:none;transition:background .15s}
-.ph-back:hover{background:rgba(255,255,255,.10)}
-.ph-back svg{width:17px;height:17px;stroke:#fff;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
-.ph-t{font-family:Outfit,Inter,sans-serif;font-size:23px;font-weight:600;letter-spacing:-.02em;line-height:1.2}
-.ph-s{font-size:13px;color:#A6C9B5;margin-top:2px}
-.ph-r{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
-.chipd{background:rgba(255,255,255,.10);border:1px solid rgba(255,255,255,.16);color:#D3EADC;
-       padding:7px 13px;border-radius:99px;font-size:12px;font-weight:500;white-space:nowrap}
-.btn-w{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.18);color:#fff;
-       padding:9px 16px;border-radius:10px;font-size:13.5px;font-weight:500}
-.btn-w:hover{background:rgba(255,255,255,.2)}
+/* ============================ TOPIC GRID ============================ */
+.topics{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
+@media(max-width:900px){.topics{grid-template-columns:1fr 1fr;gap:16px}}
+@media(max-width:600px){.topics{grid-template-columns:1fr}}
+.topic{border:1px solid var(--line);background:#fff;display:flex;flex-direction:column;
+       cursor:pointer;transition:box-shadow .15s,border-color .15s}
+.topic:hover{border-color:var(--deep3);box-shadow:0 3px 14px rgba(20,67,44,.12)}
+.topic .thumb{height:118px;position:relative;overflow:hidden;background:var(--deep);
+              display:grid;place-items:center;border-bottom:4px solid var(--accent)}
+.topic .thumb svg.ti{width:46px;height:46px;stroke:#9ED8B8;fill:none;stroke-width:1.5;
+                     stroke-linecap:round;stroke-linejoin:round;position:static}
+.topic .thumb svg{position:absolute;inset:0;width:100%;height:100%}
+.topic .tb{padding:18px 20px 16px;display:flex;flex-direction:column;flex:1}
+.topic h4{font-size:18px;font-weight:700;margin-bottom:7px;letter-spacing:-.01em}
+.topic p{font-size:14px;color:var(--t2);line-height:1.6;flex:1}
+.topic .go{display:flex;justify-content:flex-end;margin-top:14px}
+.topic .go svg{width:19px;height:19px;stroke:var(--deep);fill:none;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+.topic:hover .go svg{stroke:var(--accent)}
 
-/* ============================ CARDS & FORM ============================ */
-.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r-m);
-      padding:22px 24px;box-shadow:var(--sh-s)}
-.card+.card{margin-top:16px}
-.card h3{font-size:15px;font-weight:600;letter-spacing:-.01em;margin-bottom:16px;
-         display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap}
-.card h3 .r{font-size:12px;font-weight:400;color:var(--t3)}
-.two{display:grid;grid-template-columns:1.32fr 1fr;gap:16px;margin-top:16px}
-@media(max-width:860px){.two{grid-template-columns:1fr}}
+/* ============================ FIGURE / KEY NUMBERS ============================ */
+.keyrow{display:grid;grid-template-columns:repeat(4,1fr);border:1px solid var(--line);background:#fff}
+@media(max-width:760px){.keyrow{grid-template-columns:1fr 1fr}}
+.keyc{padding:22px 24px;border-right:1px solid var(--line)}
+.keyc:last-child{border-right:none}
+@media(max-width:760px){.keyc:nth-child(2n){border-right:none}.keyc:nth-child(-n+2){border-bottom:1px solid var(--line)}}
+.keyc b{display:block;font-size:30px;font-weight:700;letter-spacing:-.025em;line-height:1.1;color:var(--deep)}
+.keyc span{font-size:13px;color:var(--t3);display:block;margin-top:4px}
 
-.panel{background:var(--card);border:1px solid var(--line);border-radius:var(--r-l);
-       padding:28px;box-shadow:var(--sh-m)}
-.fgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:13px}
+/* ============================ NEWS-STYLE LIST ============================ */
+.split{display:grid;grid-template-columns:.85fr 1.15fr;gap:44px}
+@media(max-width:940px){.split{grid-template-columns:1fr;gap:28px}}
+.callout{background:var(--sage-xl);border:1px solid var(--line);padding:26px 28px}
+.callout h3{font-size:21px;font-weight:600;margin-bottom:10px;letter-spacing:-.01em}
+.callout p{font-size:14.5px;color:var(--t2);line-height:1.68;margin-bottom:12px}
+.newsitem{border-bottom:1px solid var(--line);padding:20px 0}
+.newsitem:first-child{padding-top:0}
+.newsitem:last-child{border-bottom:none}
+.newsitem h4{font-size:18px;font-weight:600;color:var(--link);line-height:1.35;margin-bottom:9px;letter-spacing:-.01em}
+.tags{display:flex;gap:7px;margin-bottom:8px;flex-wrap:wrap}
+.tag{font-size:10.5px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;
+     padding:3px 8px;border:1px solid var(--line);background:var(--bg2);color:var(--t2)}
+.tag.a{background:var(--gold-l);border-color:var(--gold-b);color:#7A5400}
+.tag.c{background:var(--clay-l);border-color:var(--clay-b);color:#8A2F0A}
+.tag.g{background:var(--g050);border-color:var(--g100);color:var(--deep)}
+.newsitem p{font-size:14.5px;color:var(--t2);line-height:1.68}
+
+/* ============================ CARDS ============================ */
+.card{background:#fff;border:1px solid var(--line);padding:22px 24px}
+.card+.card{margin-top:18px}
+.card h3{font-size:16px;font-weight:700;margin-bottom:16px;letter-spacing:-.01em;
+         display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap;
+         padding-bottom:12px;border-bottom:1px solid var(--line2)}
+.card h3 .r{font-size:12.5px;font-weight:400;color:var(--t3)}
+.two{display:grid;grid-template-columns:1.32fr 1fr;gap:18px;margin-top:18px}
+@media(max-width:880px){.two{grid-template-columns:1fr}}
+
+/* ============================ FORM ============================ */
+.panel{background:#fff;border:1px solid var(--line);padding:28px 30px}
+.fgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
 @media(max-width:900px){.fgrid{grid-template-columns:1fr 1fr}}
 @media(max-width:520px){.fgrid{grid-template-columns:1fr}}
-.field label{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:500;color:var(--t2);margin-bottom:7px}
-.field label svg{width:13px;height:13px;stroke:var(--g600);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
-.field select,.field input{width:100%;border:1px solid var(--line);border-radius:var(--r-s);
-      padding:11px 13px;font-size:14.5px;background:var(--card);outline:none;
-      transition:border-color .15s,box-shadow .15s;appearance:none}
-.field select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M3 4.5 6 7.5 9 4.5' stroke='%2375847A' stroke-width='1.6' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
-      background-repeat:no-repeat;background-position:right 11px center;background-size:13px;padding-right:32px}
-.field select:focus,.field input:focus{border-color:var(--g500);box-shadow:0 0 0 3px var(--g100)}
-.field select:disabled{background-color:var(--sunk);color:var(--t4)}
+.field label{display:block;font-size:14px;font-weight:600;margin-bottom:6px}
+.field select,.field input{width:100%;border:1px solid #7A7D75;border-radius:var(--r);padding:11px 13px;
+      font-size:15px;background:#fff;outline:none;appearance:none;transition:border-color .13s,box-shadow .13s}
+.field select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M3 4.5 6 7.5 9 4.5' stroke='%234C4E47' stroke-width='1.7' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+      background-repeat:no-repeat;background-position:right 11px center;background-size:13px;padding-right:34px}
+.field select:focus,.field input:focus{border-color:var(--deep);box-shadow:0 0 0 3px var(--sage)}
+.field select:disabled{background-color:var(--bg3);color:var(--t4);border-color:var(--line)}
+.fhint{font-size:12.5px;color:var(--t3);margin-top:5px}
 
-.scen{margin-top:20px;background:var(--sunk);border-radius:var(--r-m);padding:16px 18px}
-.scen-t{font-size:12.5px;color:var(--t2);margin-bottom:12px;font-weight:500}
-.scen-g{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
-.sc{background:var(--card);border:1.5px solid var(--line);border-radius:var(--r-s);padding:13px 10px;
-    text-align:center;cursor:pointer;transition:border-color .15s,box-shadow .15s,background .15s}
-.sc:hover{border-color:var(--g300)}
-.sc svg{width:20px;height:20px;margin:0 auto 5px;display:block;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
-.sc .n{font-size:13.5px;font-weight:500}
-.sc .mm{font-size:11.5px;color:var(--t3);margin-top:2px}
+.scen{margin-top:24px;border:1px solid var(--line);background:var(--bg2);padding:18px 20px}
+.scen-t{font-size:14px;font-weight:600;margin-bottom:13px}
+.scen-g{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+@media(max-width:560px){.scen-g{grid-template-columns:1fr}}
+.sc{background:#fff;border:1px solid #7A7D75;border-radius:var(--r);padding:14px 12px;text-align:center;
+    cursor:pointer;transition:border-color .13s,box-shadow .13s,background .13s}
+.sc:hover{border-color:var(--deep)}
+.sc svg{width:21px;height:21px;margin:0 auto 6px;display:block;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.sc .n{font-size:14.5px;font-weight:600}
+.sc .mm{font-size:12.5px;color:var(--t3);margin-top:2px}
 .sc[data-k=poor] svg{stroke:var(--gold)}
 .sc[data-k=normal] svg{stroke:var(--g600)}
 .sc[data-k=good] svg{stroke:var(--blue)}
-.sc.on{border-color:var(--g600);background:var(--g050);box-shadow:0 0 0 3px var(--g100)}
-.go{width:100%;margin-top:20px;padding:15px;font-size:16px;border-radius:12px;font-weight:600}
+.sc.on{border-color:var(--deep);border-width:2px;background:var(--sage-xl);box-shadow:inset 0 -4px 0 var(--deep)}
+.go{width:100%;margin-top:24px;padding:15px;font-size:16.5px;justify-content:center}
 
 /* ============================ KPIs ============================ */
-.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:0;border:1px solid var(--line);background:#fff}
 @media(max-width:900px){.kpis{grid-template-columns:1fr 1fr}}
 @media(max-width:480px){.kpis{grid-template-columns:1fr}}
-.kpi{background:var(--card);border:1px solid var(--line);border-radius:var(--r-m);padding:18px 20px;
-     box-shadow:var(--sh-s);border-top:3px solid var(--g600)}
-.kpi.b{border-top-color:var(--blue)} .kpi.a{border-top-color:var(--gold)} .kpi.g{border-top-color:var(--g500)}
-.kpi .l{font-size:11.5px;color:var(--t3);font-weight:500;margin-bottom:7px}
-.kpi .v{font-family:Outfit,Inter,sans-serif;font-size:31px;font-weight:600;letter-spacing:-.028em;line-height:1.08}
+.kpi{padding:20px 22px;border-right:1px solid var(--line);border-top:4px solid var(--g600)}
+.kpi:last-child{border-right:none}
+.kpi.b{border-top-color:var(--blue)} .kpi.a{border-top-color:var(--gold)} .kpi.g{border-top-color:var(--deep)}
+@media(max-width:900px){.kpi:nth-child(2n){border-right:none}}
+.kpi .l{font-size:13px;color:var(--t2);font-weight:600;margin-bottom:6px}
+.kpi .v{font-size:32px;font-weight:700;letter-spacing:-.028em;line-height:1.08;color:var(--t1)}
 .kpi .v small{font-size:15px;font-weight:500;color:var(--t3);letter-spacing:0}
-.kpi .n{font-size:11.5px;color:var(--t3);margin-top:6px}
-.kpi .n.pos{color:var(--g600);font-weight:500} .kpi .n.neg{color:var(--clay);font-weight:500}
+.kpi .n{font-size:12.5px;color:var(--t3);margin-top:6px}
+.kpi .n.pos{color:var(--g600);font-weight:600} .kpi .n.neg{color:var(--clay);font-weight:600}
 
 /* ============================ BARS / CHARTS ============================ */
 .bar-l{display:flex;justify-content:space-between;align-items:baseline;gap:12px;
-       font-size:12.5px;color:var(--t2);margin:13px 0 5px}
+       font-size:13.5px;color:var(--t2);margin:15px 0 6px}
 .bar-l:first-child{margin-top:0}
-.bar-l b{font-size:13.5px;color:var(--t1);font-weight:600;white-space:nowrap}
-.bar{height:9px;background:var(--line2);border-radius:99px;overflow:hidden}
-.bar i{display:block;height:100%;border-radius:99px;transition:width .5s cubic-bezier(.4,0,.2,1)}
-.tot{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:16px;
-     padding:13px 15px;background:var(--g050);border:1px solid var(--g100);border-radius:var(--r-s);font-size:13px}
-.tot b{font-family:Outfit,Inter,sans-serif;font-size:19px;font-weight:600;color:var(--g700);letter-spacing:-.02em}
+.bar-l b{font-size:14px;color:var(--t1);font-weight:700;white-space:nowrap}
+.bar{height:10px;background:var(--bg3);overflow:hidden}
+.bar i{display:block;height:100%;transition:width .5s cubic-bezier(.4,0,.2,1)}
+.tot{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:18px;
+     padding:14px 16px;background:var(--g050);border:1px solid var(--g100);font-size:14px;font-weight:600}
+.tot b{font-size:20px;font-weight:700;color:var(--deep);letter-spacing:-.02em}
 .tot.neg{background:var(--clay-l);border-color:var(--clay-b)} .tot.neg b{color:var(--clay)}
-.rrow{display:flex;justify-content:space-between;gap:12px;font-size:12.5px;color:var(--t2);
-      padding:8px 0;border-bottom:1px solid var(--line2)}
+.rrow{display:flex;justify-content:space-between;gap:12px;font-size:13.5px;color:var(--t2);
+      padding:9px 0;border-bottom:1px solid var(--line2)}
 .rrow:last-child{border-bottom:none}
-.rrow b{color:var(--t1);font-weight:600}
-.legend{display:flex;gap:16px;flex-wrap:wrap;font-size:11.5px;color:var(--t3);margin-top:12px}
-.legend span{display:flex;align-items:center;gap:6px}
-.sw{width:11px;height:3px;border-radius:2px;flex:none}
-.note{background:var(--gold-l);border-left:3px solid var(--gold);border-radius:0 var(--r-s) var(--r-s) 0;
-      padding:12px 15px;font-size:12.5px;color:#6B4A00;line-height:1.65;margin-top:14px}
-.note b{font-weight:600}
+.rrow b{color:var(--t1);font-weight:700}
+.legend{display:flex;gap:18px;flex-wrap:wrap;font-size:12.5px;color:var(--t2);margin-top:14px}
+.legend span{display:flex;align-items:center;gap:7px}
+.sw{width:13px;height:4px;flex:none}
+.note{background:var(--gold-l);border-left:4px solid var(--gold);padding:14px 16px;
+      font-size:13.5px;color:#5E4200;line-height:1.66;margin-top:16px}
+.note b{font-weight:700}
 
-/* horizontal ranked bar chart (Insights) */
-.hb{margin-top:4px}
-.hb .row{display:grid;grid-template-columns:120px 1fr auto;align-items:center;gap:14px;
-         padding:7px 0;border-radius:6px;transition:background .15s}
-.hb .row:hover{background:var(--sunk)}
-.hb .nm{font-size:13px;color:var(--t2);text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.hb .row.hi .nm{color:var(--t1);font-weight:600}
-.hb .tr{height:20px;background:var(--line2);border-radius:5px;overflow:hidden}
-.hb .fl{height:100%;border-radius:5px;transition:width .6s cubic-bezier(.4,0,.2,1)}
-.hb .vl{font-size:13px;font-weight:600;min-width:52px;text-align:right;font-variant-numeric:tabular-nums}
-@media(max-width:560px){.hb .row{grid-template-columns:88px 1fr auto;gap:9px}.hb .nm{font-size:12px}}
-
-/* stacked single bar */
-.stack{display:flex;gap:2px;height:38px;margin:6px 0 14px}
-.stack div{border-radius:6px;display:grid;place-items:center;color:#fff;font-size:13px;font-weight:600;
-           min-width:44px;transition:width .6s cubic-bezier(.4,0,.2,1)}
-
-/* chart figure wrapper */
-.fig{margin-top:22px}
-.fig:first-child{margin-top:0}
-.fig .ft{font-size:14.5px;font-weight:600;letter-spacing:-.01em;margin-bottom:3px}
-.fig .fs{font-size:12.5px;color:var(--t3);margin-bottom:15px;line-height:1.6}
-.fig .fn{font-size:11.5px;color:var(--t4);margin-top:12px;line-height:1.6}
+.hb{margin-top:6px}
+.hb .row{display:grid;grid-template-columns:130px 1fr auto;align-items:center;gap:16px;padding:8px 0}
+.hb .row:hover{background:var(--bg2)}
+.hb .nm{font-size:14px;color:var(--t2);text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hb .row.hi .nm{color:var(--t1);font-weight:700}
+.hb .tr{height:22px;background:var(--bg3)}
+.hb .fl{height:100%;transition:width .6s cubic-bezier(.4,0,.2,1)}
+.hb .vl{font-size:14px;font-weight:700;min-width:56px;text-align:right;font-variant-numeric:tabular-nums}
+@media(max-width:560px){.hb .row{grid-template-columns:92px 1fr auto;gap:10px}.hb .nm{font-size:12.5px}}
+.stack{display:flex;gap:2px;height:42px;margin:8px 0 14px}
+.stack div{display:grid;place-items:center;color:#fff;font-size:14px;font-weight:700;min-width:48px;
+           transition:width .6s cubic-bezier(.4,0,.2,1)}
+.fig{margin-top:30px;padding-top:26px;border-top:1px solid var(--line2)}
+.fig:first-child{margin-top:0;padding-top:0;border-top:none}
+.fig .ft{font-size:17px;font-weight:700;letter-spacing:-.01em;margin-bottom:4px}
+.fig .fs{font-size:14px;color:var(--t2);margin-bottom:17px;line-height:1.6}
+.fig .fn{font-size:13px;color:var(--t3);margin-top:14px;line-height:1.66;padding-left:14px;border-left:3px solid var(--line)}
 
 /* ============================ ADVISORY ============================ */
-.adv{background:linear-gradient(140deg,var(--g800),var(--g900));color:#fff;border-radius:var(--r-m);
-     padding:22px 24px;margin-top:16px;position:relative;overflow:hidden}
-.adv::after{content:"";position:absolute;width:300px;height:300px;right:-110px;top:-120px;border-radius:50%;
-            background:radial-gradient(circle,rgba(79,185,131,.18),transparent 70%)}
-.adv>*{position:relative;z-index:1}
-.adv h3{font-size:15px;font-weight:600;margin-bottom:14px;display:flex;align-items:center;gap:9px;color:#fff}
-.adv h3 svg{width:17px;height:17px;stroke:var(--g400);fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
-.amsg{background:rgba(255,255,255,.075);border:1px solid rgba(255,255,255,.10);border-radius:var(--r-s);
-      padding:12px 15px;font-size:13.5px;line-height:1.65;color:#DFF0E6}
-.amsg+.amsg{margin-top:9px}
+.adv{background:var(--deep2);color:#fff;padding:24px 26px;margin-top:18px;border-left:5px solid var(--accent)}
+.adv h3{font-size:16px;font-weight:700;margin-bottom:15px;display:flex;align-items:center;gap:10px;color:#fff}
+.adv h3 svg{width:18px;height:18px;stroke:#8FD4B0;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.amsg{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);padding:13px 16px;
+      font-size:14.5px;line-height:1.65;color:#E1F0E7}
+.amsg+.amsg{margin-top:10px}
 
 /* ============================ CROP CARDS ============================ */
-.crop{background:var(--card);border:1px solid var(--line);border-radius:var(--r-m);padding:17px 19px;
-      transition:border-color .15s,box-shadow .15s}
-.crop:hover{border-color:var(--g300);box-shadow:var(--sh-m)}
-.crop.top{border-color:var(--g300);background:linear-gradient(180deg,var(--g050),var(--card) 62%)}
-.rec{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;font-size:11.5px;
-     color:var(--g700);font-weight:500;margin-bottom:13px;padding-bottom:11px;border-bottom:1px solid var(--g100)}
+.crop{background:#fff;border:1px solid var(--line);padding:18px 20px;transition:border-color .13s,box-shadow .13s}
+.crop:hover{border-color:var(--deep3);box-shadow:0 3px 12px rgba(20,67,44,.10)}
+.crop.top{border-left:5px solid var(--deep);background:var(--sage-xl)}
+.rec{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;font-size:12.5px;
+     color:var(--deep);font-weight:700;margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid var(--line)}
 .rec span:last-child{color:var(--t3);font-weight:400}
 .crop-h{display:flex;justify-content:space-between;align-items:center;gap:14px}
-.crop-n{display:flex;align-items:center;gap:12px;min-width:0}
-.ico{width:38px;height:38px;border-radius:11px;background:var(--g050);border:1px solid var(--g100);
-     display:grid;place-items:center;flex:none}
-.ico svg{width:19px;height:19px;stroke:var(--g600);fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
-.crop-t{font-size:16px;font-weight:600;letter-spacing:-.01em}
-.crop-d{font-size:12px;color:var(--t3)}
+.crop-n{display:flex;align-items:center;gap:13px;min-width:0}
+.ico{width:40px;height:40px;background:var(--sage-l);display:grid;place-items:center;flex:none}
+.ico svg{width:20px;height:20px;stroke:var(--deep);fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.crop-t{font-size:17px;font-weight:700;letter-spacing:-.01em}
+.crop-d{font-size:13px;color:var(--t3)}
 .score{text-align:right;flex:none}
-.score b{font-family:Outfit,Inter,sans-serif;font-size:27px;font-weight:600;letter-spacing:-.025em;line-height:1}
-.score span{display:block;font-size:10.5px;color:var(--t3)}
-.sbar{height:6px;background:var(--line2);border-radius:99px;overflow:hidden;margin:13px 0}
-.sbar i{display:block;height:100%;border-radius:99px;transition:width .6s cubic-bezier(.4,0,.2,1)}
-.mets{display:grid;grid-template-columns:repeat(4,1fr);gap:9px}
+.score b{font-size:28px;font-weight:700;letter-spacing:-.025em;line-height:1}
+.score span{display:block;font-size:11px;color:var(--t3)}
+.sbar{height:7px;background:var(--bg3);overflow:hidden;margin:14px 0}
+.sbar i{display:block;height:100%;transition:width .6s cubic-bezier(.4,0,.2,1)}
+.mets{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
 @media(max-width:620px){.mets{grid-template-columns:1fr 1fr}}
-.met{background:var(--sunk);border-radius:var(--r-s);padding:9px 11px}
-.met .l{font-size:10.5px;color:var(--t3);margin-bottom:2px}
-.met .v{font-size:13.5px;font-weight:600}
-.met.g{background:var(--g050)} .met.g .v{color:var(--g700)}
-.met.r{background:var(--clay-l)} .met.r .v{color:var(--clay)}
-.met.a{background:var(--gold-l)} .met.a .v{color:#8A5E00}
+.met{background:var(--bg2);border:1px solid var(--line2);padding:10px 12px}
+.met .l{font-size:11.5px;color:var(--t3);margin-bottom:2px}
+.met .v{font-size:14.5px;font-weight:700}
+.met.g{background:var(--g050);border-color:var(--g100)} .met.g .v{color:var(--deep)}
+.met.r{background:var(--clay-l);border-color:var(--clay-b)} .met.r .v{color:var(--clay)}
+.met.a{background:var(--gold-l);border-color:var(--gold-b)} .met.a .v{color:#7A5400}
 
 /* ============================ PROSE / TABLES ============================ */
-.prose{background:var(--card);border:1px solid var(--line);border-radius:var(--r-m);
-       padding:28px 30px;box-shadow:var(--sh-s)}
-.prose+.prose{margin-top:16px}
-.prose h2{font-family:Outfit,Inter,sans-serif;font-size:21px;font-weight:600;letter-spacing:-.022em;margin-bottom:13px}
-.prose h4{font-size:14.5px;font-weight:600;margin:24px 0 7px;letter-spacing:-.01em}
-.prose h4:first-of-type{margin-top:18px}
-.prose p{font-size:14px;color:var(--t2);line-height:1.75;margin-bottom:11px;max-width:74ch}
-.prose ul{margin:6px 0 0 0;padding:0;list-style:none}
-.prose li{font-size:14px;color:var(--t2);line-height:1.7;padding-left:22px;margin-bottom:9px;position:relative;max-width:74ch}
-.prose li::before{content:"";position:absolute;left:5px;top:10px;width:5px;height:5px;border-radius:50%;background:var(--g400)}
-.prose b{color:var(--t1);font-weight:600}
-.tbl{width:100%;border-collapse:collapse;margin:14px 0 4px;font-size:13.5px}
-.tbl th{text-align:left;font-size:11px;font-weight:600;color:var(--t3);text-transform:uppercase;
-        letter-spacing:.05em;padding:0 14px 9px 0;border-bottom:1px solid var(--line)}
-.tbl td{padding:12px 14px 12px 0;border-bottom:1px solid var(--line2);vertical-align:top;color:var(--t2)}
-.tbl tr:last-child td{border-bottom:none}
-.tbl td b{color:var(--t1)}
+.prose{background:#fff;border:1px solid var(--line);padding:30px 32px}
+.prose+.prose{margin-top:20px}
+.prose h2{font-size:24px;font-weight:600;letter-spacing:-.018em;margin-bottom:14px;
+          padding-bottom:12px;border-bottom:2px solid var(--deep)}
+.prose h4{font-size:16px;font-weight:700;margin:26px 0 8px;letter-spacing:-.01em}
+.prose p{font-size:15.5px;color:var(--t2);line-height:1.75;margin-bottom:12px;max-width:76ch}
+.prose ul{margin:8px 0 0;padding:0;list-style:none}
+.prose li{font-size:15.5px;color:var(--t2);line-height:1.72;padding-left:24px;margin-bottom:11px;position:relative;max-width:76ch}
+.prose li::before{content:"";position:absolute;left:4px;top:11px;width:7px;height:2px;background:var(--deep)}
+.prose b{color:var(--t1);font-weight:700}
+.tbl{width:100%;border-collapse:collapse;margin:16px 0 4px;font-size:14.5px}
+.tbl th{text-align:left;font-size:12px;font-weight:700;color:#fff;background:var(--deep);
+        letter-spacing:.04em;text-transform:uppercase;padding:10px 14px}
+.tbl td{padding:13px 14px;border-bottom:1px solid var(--line2);vertical-align:top;color:var(--t2)}
+.tbl tr:nth-child(even) td{background:var(--bg2)}
+.tbl td b{color:var(--t1);font-weight:700}
 
-/* numbered finding grid */
-.qgrid{display:grid;grid-template-columns:1fr 1fr;gap:22px 30px;margin-top:18px}
-@media(max-width:780px){.qgrid{grid-template-columns:1fr;gap:18px}}
-.q{display:flex;gap:13px}
-.qn{width:25px;height:25px;border-radius:8px;background:var(--g050);border:1px solid var(--g100);
-    color:var(--g700);font-size:12px;font-weight:600;display:grid;place-items:center;flex:none;margin-top:1px}
-.q h5{font-size:14px;font-weight:600;margin-bottom:5px;letter-spacing:-.01em}
-.q p{font-size:13.5px;color:var(--t2);line-height:1.68;margin:0}
-.q .src{font-size:11.5px;color:var(--t4);margin-top:6px}
+.qgrid{display:grid;grid-template-columns:1fr 1fr;gap:26px 34px;margin-top:20px}
+@media(max-width:820px){.qgrid{grid-template-columns:1fr;gap:20px}}
+.q{border-left:3px solid var(--sage);padding-left:18px}
+.q .qn{font-size:11.5px;font-weight:700;color:var(--accent);letter-spacing:.08em;text-transform:uppercase;margin-bottom:5px}
+.q h5{font-size:16.5px;font-weight:700;margin-bottom:7px;letter-spacing:-.01em}
+.q p{font-size:14.5px;color:var(--t2);line-height:1.7;margin:0}
 
-/* pipeline diagram */
-.pipe{display:grid;grid-template-columns:1fr auto 1fr;gap:16px;align-items:stretch;margin-top:16px}
-@media(max-width:760px){.pipe{grid-template-columns:1fr;gap:12px}.pipe .arrow{transform:rotate(90deg);margin:0 auto}}
-.pbox{border:1px solid var(--line);border-radius:var(--r-m);padding:18px 20px;background:var(--sunk)}
-.pbox.on{background:var(--g050);border-color:var(--g100)}
-.pbox .pt{font-size:11px;font-weight:600;color:var(--g600);letter-spacing:.04em;text-transform:uppercase;margin-bottom:10px}
-.pstep{display:flex;gap:10px;align-items:flex-start;font-size:13px;color:var(--t2);line-height:1.55;margin-bottom:9px}
+.pipe{display:grid;grid-template-columns:1fr auto 1fr;gap:20px;align-items:stretch;margin-top:18px}
+@media(max-width:780px){.pipe{grid-template-columns:1fr;gap:14px}.pipe .arrow{transform:rotate(90deg);margin:0 auto}}
+.pbox{border:1px solid var(--line);padding:20px 22px;background:var(--bg2)}
+.pbox.on{background:var(--sage-xl);border-color:var(--sage-d)}
+.pbox .pt{font-size:11.5px;font-weight:700;color:var(--deep);letter-spacing:.07em;text-transform:uppercase;
+          margin-bottom:13px;padding-bottom:9px;border-bottom:1px solid var(--line)}
+.pstep{display:flex;gap:11px;align-items:flex-start;font-size:14px;color:var(--t2);line-height:1.55;margin-bottom:10px}
 .pstep:last-child{margin-bottom:0}
-.pstep i{width:20px;height:20px;border-radius:6px;background:var(--card);border:1px solid var(--line);
-         display:grid;place-items:center;flex:none;font-size:10.5px;font-weight:600;color:var(--t3);font-style:normal}
+.pstep i{width:21px;height:21px;background:var(--deep);display:grid;place-items:center;flex:none;
+         font-size:11px;font-weight:700;color:#fff;font-style:normal;margin-top:1px}
 .arrow{display:grid;place-items:center}
-.arrow svg{width:22px;height:22px;stroke:var(--t4);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.arrow svg{width:24px;height:24px;stroke:var(--t4);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 
 /* ============================ HISTORY ============================ */
-.hrow{background:var(--card);border:1px solid var(--line);border-radius:var(--r-m);padding:17px 19px;
-      display:flex;justify-content:space-between;align-items:center;gap:18px;flex-wrap:wrap;
-      transition:border-color .15s,box-shadow .15s}
-.hrow:hover{border-color:var(--g300);box-shadow:var(--sh-m)}
-.hrow+.hrow{margin-top:11px}
-.hm{display:flex;gap:26px;flex-wrap:wrap;min-width:0}
-.hm div{font-size:11.5px;color:var(--t3)}
-.hm b{display:block;font-size:14.5px;color:var(--t1);font-weight:600;margin-bottom:1px;letter-spacing:-.01em}
+.hrow{background:#fff;border:1px solid var(--line);border-left:4px solid var(--deep);padding:18px 20px;
+      display:flex;justify-content:space-between;align-items:center;gap:20px;flex-wrap:wrap;transition:box-shadow .13s}
+.hrow:hover{box-shadow:0 3px 12px rgba(20,67,44,.10)}
+.hrow+.hrow{margin-top:12px}
+.hm{display:flex;gap:30px;flex-wrap:wrap;min-width:0}
+.hm div{font-size:12.5px;color:var(--t3)}
+.hm b{display:block;font-size:15px;color:var(--t1);font-weight:700;margin-bottom:1px;letter-spacing:-.01em}
 .hm b.pos{color:var(--g600)} .hm b.neg{color:var(--clay)}
-.hact{display:flex;gap:9px;align-items:center;flex:none}
-.hdel{color:var(--clay);font-size:13px;padding:9px 12px;border-radius:9px}
-.hdel:hover{background:var(--clay-l)}
+.hact{display:flex;gap:10px;align-items:center;flex:none}
+.hdel{color:var(--clay);font-size:14px;font-weight:600;padding:9px 12px}
+.hdel:hover{text-decoration:underline}
 
 /* ============================ STATES ============================ */
-.empty{text-align:center;padding:66px 24px;background:var(--card);border:1px solid var(--line);
-       border-radius:var(--r-m);box-shadow:var(--sh-s)}
-.empty .ei{width:52px;height:52px;border-radius:15px;background:var(--g050);border:1px solid var(--g100);
-           display:grid;place-items:center;margin:0 auto 16px}
-.empty .ei svg{width:24px;height:24px;stroke:var(--g600);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
-.empty h4{font-family:Outfit,Inter,sans-serif;font-size:19px;font-weight:600;margin-bottom:7px;letter-spacing:-.02em}
-.empty p{font-size:14px;color:var(--t2);margin-bottom:20px;max-width:42ch;margin-left:auto;margin-right:auto;line-height:1.65}
-.load{text-align:center;padding:60px 20px;color:var(--t3);font-size:14px}
-.spin{width:30px;height:30px;border:2.5px solid var(--line);border-top-color:var(--g600);
-      border-radius:50%;animation:sp .7s linear infinite;margin:0 auto 14px}
+.empty{text-align:center;padding:64px 26px;background:#fff;border:1px solid var(--line)}
+.empty .ei{width:54px;height:54px;background:var(--sage-l);display:grid;place-items:center;margin:0 auto 18px}
+.empty .ei svg{width:25px;height:25px;stroke:var(--deep);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.empty h4{font-size:21px;font-weight:600;margin-bottom:8px;letter-spacing:-.015em}
+.empty p{font-size:15px;color:var(--t2);margin:0 auto 22px;max-width:44ch;line-height:1.65}
+.load{text-align:center;padding:58px 20px;color:var(--t2);font-size:15px}
+.spin{width:32px;height:32px;border:3px solid var(--line);border-top-color:var(--deep);
+      border-radius:50%;animation:sp .7s linear infinite;margin:0 auto 15px}
 @keyframes sp{to{transform:rotate(360deg)}}
-.err{background:var(--clay-l);border:1px solid var(--clay-b);border-radius:var(--r-m);padding:20px 22px}
-.err b{display:block;font-size:15px;color:#8A2F0A;margin-bottom:5px;font-weight:600}
-.err p{font-size:13.5px;color:#9C4A22;line-height:1.6}
+.err{background:var(--clay-l);border:1px solid var(--clay-b);border-left:5px solid var(--clay);padding:20px 22px}
+.err b{display:block;font-size:16px;color:#8A2F0A;margin-bottom:5px;font-weight:700}
+.err p{font-size:14.5px;color:#9C4A22;line-height:1.6}
+.saveprompt{background:var(--sage-xl);border:1px solid var(--sage-d);border-left:5px solid var(--deep);
+            padding:15px 20px;margin-bottom:18px;display:flex;justify-content:space-between;
+            align-items:center;gap:16px;flex-wrap:wrap;font-size:14.5px;color:var(--deep2);font-weight:600}
+.sp-l{display:flex;align-items:center;gap:11px}
+.saveprompt svg{width:18px;height:18px;stroke:var(--deep);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:none}
 
-/* save prompt */
-.saveprompt{background:var(--g050);border:1px solid var(--g100);border-radius:var(--r-m);
-            padding:14px 18px;margin-bottom:16px;display:flex;justify-content:space-between;
-            align-items:center;gap:14px;flex-wrap:wrap;font-size:13.5px;color:var(--g700)}
-.saveprompt .sp-l{display:flex;align-items:center;gap:10px}
-.saveprompt svg{width:17px;height:17px;stroke:var(--g600);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:none}
+/* ============================ FEEDBACK STRIP ============================ */
+.helpful{background:var(--sage-l);border-top:1px solid var(--sage-d)}
+.helpful .wrap{display:flex;align-items:center;justify-content:center;gap:16px;
+               padding-top:20px;padding-bottom:20px;flex-wrap:wrap;font-size:15px;font-weight:600;color:var(--deep2)}
+.helpful button{background:#fff;border:1px solid var(--deep);color:var(--deep);padding:8px 26px;
+                font-size:14.5px;font-weight:600;border-radius:var(--r)}
+.helpful button:hover{background:var(--deep);color:#fff}
 
 /* ============================ FOOTER ============================ */
-.foot{border-top:1px solid var(--line);background:var(--card);padding:34px 0 40px;margin-top:8px}
-.fgrid2{display:grid;grid-template-columns:1.6fr 1fr 1fr;gap:34px}
-@media(max-width:760px){.fgrid2{grid-template-columns:1fr;gap:24px}}
-.foot .fb{font-size:12.5px;color:var(--t3);line-height:1.7;max-width:46ch;margin-top:12px}
-.fcol h6{font-size:11px;font-weight:600;color:var(--t3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:11px}
-.fcol a,.fcol span{display:block;font-size:13px;color:var(--t2);margin-bottom:7px;cursor:pointer}
-.fcol a:hover{color:var(--g600)}
-.fbot{border-top:1px solid var(--line2);margin-top:26px;padding-top:18px;font-size:12px;color:var(--t4);
-      display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
+.foot{background:var(--char);color:#D6D8D0;padding:44px 0 32px;font-size:14px}
+.fgrid2{display:grid;grid-template-columns:1.5fr 1fr 1fr;gap:40px}
+@media(max-width:820px){.fgrid2{grid-template-columns:1fr;gap:26px}}
+.foot .fb{font-size:13.5px;line-height:1.75;max-width:52ch;color:#B9BCB2;margin-top:14px}
+.foot .fb b{color:#EDEFE8;font-weight:600}
+.fcol h6{font-size:12px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.07em;margin-bottom:13px}
+.fcol a,.fcol span{display:block;font-size:14px;color:#C6C9C0;margin-bottom:9px;cursor:pointer;line-height:1.5}
+.fcol a:hover{color:#fff;text-decoration:underline}
+.fbot{border-top:1px solid #4E4F48;margin-top:32px;padding-top:20px;font-size:13px;color:#9B9E95;
+      display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.fident{display:flex;align-items:center;gap:12px}
+.fident .crest{background:#fff}
+.fident .crest svg{stroke:var(--deep)}
+.fident .n1{font-size:18px;font-weight:700;color:#fff}
+.fident .n2{font-size:12.5px;color:#B9BCB2;border-top:1px solid #5A5B53;padding-top:3px;margin-top:2px}
+
+/* ============================ AUTH PAGE ============================ */
+.auth{min-height:100vh;display:grid;grid-template-columns:1fr 1fr;background:#fff}
+.auth-l{display:flex;align-items:center;justify-content:center;padding:52px 34px}
+.auth-box{width:100%;max-width:406px}
+.auth-box .ident{margin-bottom:36px;cursor:pointer}
+.auth-box .idt .n2{border-top-color:var(--line)}
+.auth-h{font-size:32px;font-weight:600;letter-spacing:-.018em;margin-bottom:9px}
+.auth-s{font-size:15px;color:var(--t2);margin-bottom:28px;line-height:1.65}
+.fld{margin-bottom:17px}
+.fld label{display:block;font-size:14px;font-weight:600;margin-bottom:6px}
+.fld input{width:100%;border:1px solid #7A7D75;border-radius:var(--r);padding:12px 14px;font-size:15.5px;
+           outline:none;background:#fff;transition:border-color .13s,box-shadow .13s}
+.fld input::placeholder{color:var(--t4)}
+.fld input:focus{border-color:var(--deep);box-shadow:0 0 0 3px var(--sage)}
+.wbtn{width:100%;justify-content:center;padding:13px;font-size:16px;margin-top:8px}
+.swap{font-size:15px;color:var(--t2);margin-top:22px;padding-top:20px;border-top:1px solid var(--line2)}
+.swap b{color:var(--link);cursor:pointer;font-weight:700;text-decoration:underline}
+.msg{padding:13px 15px;font-size:14px;line-height:1.6;margin-bottom:18px;display:flex;gap:11px;align-items:flex-start}
+.msg svg{width:17px;height:17px;flex:none;margin-top:2px;stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round}
+.msg.ok{background:var(--g050);color:var(--deep);border-left:4px solid var(--g600)}
+.msg.ok svg{stroke:var(--g600)}
+.msg.bad{background:var(--clay-l);color:#8A2F0A;border-left:4px solid var(--clay)}
+.msg.bad svg{stroke:var(--clay)}
+.otp{letter-spacing:.44em;text-align:center;font-size:23px!important;font-weight:700;padding-left:16px!important}
+.backlink{font-size:14.5px;color:var(--link);margin-top:26px;display:inline-flex;align-items:center;gap:7px;
+          cursor:pointer;font-weight:600}
+.backlink:hover{text-decoration:underline}
+.backlink svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.auth-r{position:relative;overflow:hidden;background:var(--deep2);color:#fff;padding:56px 50px;
+        display:flex;flex-direction:column;justify-content:center}
+.auth-r svg.art{position:absolute;inset:0;width:100%;height:100%}
+.auth-r .scrim{position:absolute;inset:0;background:linear-gradient(170deg,rgba(6,26,16,.80),rgba(6,26,16,.94))}
+.auth-r>*{position:relative;z-index:2}
+.auth-r .kicker{align-self:flex-start}
+.auth-r h2{font-size:33px;font-weight:300;line-height:1.22;letter-spacing:-.018em;margin-bottom:18px;max-width:16ch}
+.auth-r h2 b{font-weight:700}
+.auth-r p{font-size:15px;color:#BCD5C5;line-height:1.72;max-width:46ch;margin-bottom:30px;font-weight:300}
+.tiles{display:grid;grid-template-columns:1fr 1fr;gap:1px;max-width:440px;background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.18)}
+.tile{background:var(--deep2);padding:18px 20px}
+.tile b{display:block;font-size:27px;font-weight:700;letter-spacing:-.025em}
+.tile span{font-size:12.5px;color:#9FC2AE}
+.auth-r .foot-n{font-size:13px;color:#87A995;margin-top:30px;max-width:46ch;line-height:1.7}
+@media(max-width:960px){ .auth{grid-template-columns:1fr} .auth-r{display:none} }
 
 @media print{
-  .hdr,.hbtns,.ph-r,.ph-back,.foot,.go,.scen,.saveprompt,.hact,.auth{display:none!important}
-  body{background:#fff}
-  .card,.crop,.kpi,.prose{break-inside:avoid;border:1px solid #ddd;box-shadow:none}
-  .phead,.adv{background:#123420!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .util,.mainnav,.crumb,.bbtns,.pb-r,.foot,.go,.scen,.saveprompt,.hact,.auth,.helpful{display:none!important}
+  body{background:#fff;font-size:12pt}
+  .card,.crop,.kpi,.prose{break-inside:avoid;border:1px solid #ccc}
+  .pbanner,.adv{background:#0E3320!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
   .two,.kpis{grid-template-columns:1fr 1fr}
 }
 </style>
 </head>
 <body>
 
-<!-- ======================= HEADER ======================= -->
-<header class="hdr" id="hdr">
+<!-- shared banner artwork: a stylised district landscape, used behind every masthead -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs>
+  <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#1B4E36"/><stop offset=".55" stop-color="#4C8465"/><stop offset="1" stop-color="#8FB59B"/>
+  </linearGradient>
+  <linearGradient id="fld" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#47895F"/><stop offset="1" stop-color="#15492F"/>
+  </linearGradient>
+  <symbol id="land" viewBox="0 0 1600 420" preserveAspectRatio="xMidYMid slice">
+    <rect width="1600" height="420" fill="#103824"/>
+    <path d="M0 148 L1600 116 L1600 200 L0 228Z" fill="#14432C"/>
+    <path d="M0 216 L1600 188 L1600 268 L0 290Z" fill="#194E33"/>
+    <rect y="280" width="1600" height="140" fill="#1C5636"/>
+    <g stroke="#3C8A5E" stroke-width="1.6" opacity=".42" fill="none">
+      <path d="M-700 420 L860 282"/><path d="M-480 420 L860 282"/><path d="M-260 420 L860 282"/>
+      <path d="M-40 420 L860 282"/><path d="M180 420 L860 282"/><path d="M400 420 L860 282"/>
+      <path d="M620 420 L860 282"/><path d="M840 420 L860 282"/><path d="M1060 420 L860 282"/>
+      <path d="M1280 420 L860 282"/><path d="M1500 420 L860 282"/><path d="M1720 420 L860 282"/>
+      <path d="M1940 420 L860 282"/><path d="M2160 420 L860 282"/><path d="M2380 420 L860 282"/>
+    </g>
+    <g stroke="#4A9A6C" stroke-width="1" opacity=".26" fill="none">
+      <path d="M0 296 H1600"/><path d="M0 320 H1600"/><path d="M0 354 H1600"/><path d="M0 398 H1600"/>
+    </g>
+    <g stroke="#2C7049" stroke-width="1" opacity=".5" fill="none">
+      <path d="M0 158 H1600"/><path d="M0 226 H1600"/>
+    </g>
+  </symbol>
+</defs></svg>
+
+<!-- ======================= UTILITY BAR ======================= -->
+<div class="util" id="util">
   <div class="wrap">
-    <div class="brand" onclick="nav('home')">
-      <div class="mark"><svg viewBox="0 0 24 24"><path d="M12 22V10M12 10C12 6 9 3 5 3c0 4 3 7 7 7zM12 12c0-3.5 2.6-6 6-6 0 3.4-2.6 6-6 6z"/></svg></div>
-      <div><div class="bname">KrishiDSS</div><div class="btag">Crop planning, grounded in data</div></div>
+    <div class="ident" onclick="nav('home')">
+      <div class="crest"><svg viewBox="0 0 24 24"><path d="M12 22V10M12 10C12 6 9 3 5 3c0 4 3 7 7 7zM12 12c0-3.5 2.6-6 6-6 0 3.4-2.6 6-6 6z"/></svg></div>
+      <div class="idt"><div class="n1">KrishiDSS</div>
+        <div class="n2">Crop Planning Decision Support System</div></div>
     </div>
-    <nav class="pillnav" aria-label="Main">
-      <a data-s="home" class="on" onclick="nav('home')">Plan</a>
-      <a data-s="compare" onclick="nav('compare')">Compare</a>
-      <a data-s="insights" onclick="nav('insights')">Insights</a>
-      <a data-s="about" onclick="nav('about')">Data &amp; method</a>
-      <a data-s="history" id="nav-hist" class="hide" onclick="nav('history')">History</a>
-    </nav>
-    <div class="hright" id="hright"></div>
+    <div style="display:flex;align-items:center;flex-wrap:wrap;justify-content:flex-end">
+      <nav class="ulinks" aria-label="Utility">
+        <a onclick="nav('insights')">Model performance</a>
+        <a onclick="nav('about')">Data sources</a>
+        <a href="https://crop-advisory-api-yz0w.onrender.com/docs" target="_blank" rel="noopener">API</a>
+      </nav>
+      <div class="uacct" id="hright"></div>
+    </div>
   </div>
-</header>
+</div>
+
+<!-- ======================= MAIN NAV ======================= -->
+<nav class="mainnav" id="mainnav" aria-label="Main">
+  <div class="wrap">
+    <a data-s="home" class="on" onclick="nav('home')">Plan a season</a>
+    <a data-s="compare" onclick="nav('compare')">Compare crops</a>
+    <a data-s="insights" onclick="nav('insights')">Model performance</a>
+    <a data-s="about" onclick="nav('about')">Data and method</a>
+    <a data-s="history" id="nav-hist" class="hide" onclick="nav('history')">My advisories</a>
+  </div>
+</nav>
+
+<!-- ======================= BREADCRUMB ======================= -->
+<div class="crumb hide" id="crumb"><div class="wrap">
+  <a onclick="nav('home')">Home</a> <span>/</span> <span id="crumb-t"></span>
+</div></div>
 
 <!-- ======================= AUTH PAGE ======================= -->
 <section id="s-auth" class="hide">
  <div class="auth">
   <div class="auth-l">
    <div class="auth-box">
-    <div class="brand" onclick="nav('home')">
-      <div class="mark"><svg viewBox="0 0 24 24"><path d="M12 22V10M12 10C12 6 9 3 5 3c0 4 3 7 7 7zM12 12c0-3.5 2.6-6 6-6 0 3.4-2.6 6-6 6z"/></svg></div>
-      <div><div class="bname">KrishiDSS</div><div class="btag">Crop planning, grounded in data</div></div>
+    <div class="ident" onclick="nav('home')">
+      <div class="crest"><svg viewBox="0 0 24 24"><path d="M12 22V10M12 10C12 6 9 3 5 3c0 4 3 7 7 7zM12 12c0-3.5 2.6-6 6-6 0 3.4-2.6 6-6 6z"/></svg></div>
+      <div class="idt"><div class="n1">KrishiDSS</div>
+        <div class="n2">Crop Planning Decision Support System</div></div>
     </div>
-
-    <h1 class="auth-h" id="au-h">Create your account</h1>
-    <p class="auth-s" id="au-s">Save the advisories you generate and open them again from any device.</p>
+    <h1 class="auth-h" id="au-h">Create an account</h1>
+    <p class="auth-s" id="au-s">Keep the advisories you generate and open them again from any device.</p>
     <div id="au-msg"></div>
 
     <form id="au-form" onsubmit="event.preventDefault();submitAuth()">
@@ -520,94 +583,95 @@ h1 .accent{color:var(--g600);display:block}
     </div>
 
     <div class="backlink" onclick="nav('home')">
-      <svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
-      Back to the advisory tool
-    </div>
+      <svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>Back to the planning tool</div>
    </div>
   </div>
 
   <aside class="auth-r">
-    <div class="eyebrow"><i></i>District records · 1997–2015</div>
-    <h2>Six public datasets, joined into one answer.</h2>
-    <p>Crop production from the Ministry of Agriculture, rainfall and temperature from the ICRISAT
-       district database, cost of cultivation and minimum support prices from the Directorate of
-       Economics and Statistics. Nothing here is simulated.</p>
+    <svg class="art" aria-hidden="true"><use href="#land"/></svg>
+    <div class="scrim"></div>
+    <div class="kicker">Public data</div>
+    <h2>Six public datasets, <b>joined into one answer.</b></h2>
+    <p>Crop production from the Ministry of Agriculture and Farmers Welfare, rainfall and temperature
+       from the ICRISAT District Level Database, cost of cultivation and minimum support prices from
+       the Directorate of Economics and Statistics. Nothing in the pipeline is simulated.</p>
     <div class="tiles">
       <div class="tile"><b id="a-d">—</b><span>districts covered</span></div>
       <div class="tile"><b id="a-c">—</b><span>crop-season combinations</span></div>
       <div class="tile"><b id="a-r">—</b><span>model R² on held-out years</span></div>
       <div class="tile"><b id="a-y">—</b><span>years of records</span></div>
     </div>
-    <p class="foot-n">An account is only needed to save advisories. The planning tool itself is open
-       to everyone, with no sign-in.</p>
+    <p class="foot-n">An account is needed only to save advisories. The planning tool itself is open to
+       everyone with no sign-in.</p>
   </aside>
  </div>
 </section>
 
 <!-- ======================= HOME ======================= -->
 <section id="s-home">
-  <div class="hero">
-    <div class="wrap">
-      <div class="hgrid">
-        <div>
-          <div class="eyebrow dk"><i></i>Yield · cost · risk, for any district</div>
-          <h1 class="dsp">Know your land.<span class="accent">Plan your season.</span></h1>
-          <p class="lead">Pick a district, a crop and a monsoon scenario. KrishiDSS estimates what the
-            land will yield, what it will cost to grow, and whether the price will clear that cost —
-            from published government records, not guesswork.</p>
-          <div class="hbtns">
-            <button class="btn btn-p btn-xl" onclick="document.getElementById('planner').scrollIntoView({block:'center'})">Plan my season</button>
-            <button class="btn btn-g btn-xl" onclick="nav('insights')">How it works</button>
-          </div>
-          <p class="hnote">Free, no sign-in needed. Records end in 2015 — this is a demonstration on historical data.</p>
-        </div>
-
-        <div class="hcard">
-          <div class="lab">The finding that shapes everything</div>
-          <div class="big dsp">73%</div>
-          <div class="cap">of yield variation is between districts, not between years within one district.</div>
-          <div class="blocks" role="img" aria-label="Roughly seven of ten parts of yield variation are between districts">
-            <i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i>
-            <i class="f"></i><i class="f"></i><i></i><i></i><i></i>
-          </div>
-          <div class="sub">Soil, irrigation and local practice decide most of the outcome. That is why the
-            monsoon setting moves the risk score sharply but the yield figure only a little — and why
-            the model is built around each district's own record.</div>
-        </div>
+  <div class="banner">
+    <svg class="art" aria-hidden="true"><use href="#land"/></svg>
+    <div class="scrim"></div>
+    <div class="wrap"><div class="bpanel">
+      <div class="kicker">District records 1997–2015</div>
+      <h1>Know what your land<b>will give you.</b></h1>
+      <p>Yield, cost and risk estimates for any district-crop combination in the record —
+         built on six public government and research datasets, not guesswork.</p>
+      <div class="bbtns">
+        <button class="btn btn-p" onclick="document.getElementById('planner').scrollIntoView({block:'start'})">
+          Start planning <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg></button>
+        <button class="btn btn-w" style="padding:11px 22px;font-size:15px;border-width:2px" onclick="nav('insights')">How the model performs</button>
       </div>
-    </div>
+      <p class="bnote">Free to use, no sign-in required. An independent university capstone project —
+         a demonstration on historical records, not an official or commercial advisory service.</p>
+    </div></div>
+  </div>
 
-    <div class="strip">
-      <div class="wrap">
-        <div class="sitem"><b id="s-d">—</b><span>districts</span></div>
-        <div class="sitem"><b id="s-c">—</b><span>crop-season combinations</span></div>
-        <div class="sitem"><b id="s-r">—</b><span>model R²</span></div>
-        <div class="sitem"><b id="s-y">—</b><span>years of data</span></div>
+  <div class="sect">
+    <div class="wrap">
+      <h2 class="sh">Explore the <b>tools</b></h2>
+      <p class="sh-p">Three ways into the same underlying model and dataset.</p>
+      <div class="topics">
+        <div class="topic" onclick="document.getElementById('planner').scrollIntoView({block:'start'})">
+          <div class="thumb"><svg class="ti" viewBox="0 0 24 24"><path d="M12 22V10M12 10C12 6 9 3 5 3c0 4 3 7 7 7zM12 12c0-3.5 2.6-6 6-6 0 3.4-2.6 6-6 6z"/></svg></div>
+          <div class="tb"><h4>Plan a season</h4>
+            <p>Pick a district, crop and monsoon scenario. Get a yield estimate, a full cost breakdown,
+               a risk score and an advisory.</p>
+            <div class="go"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></div></div>
+        </div>
+        <div class="topic" onclick="nav('compare')">
+          <div class="thumb"><svg class="ti" viewBox="0 0 24 24"><path d="M3 21h18M6 21V11M11 21V5M16 21v-7M21 21V9"/></svg></div>
+          <div class="tb"><h4>Compare crops</h4>
+            <p>Every crop your district has records for, ranked by a suitability score that blends
+               profit, yield, risk and depth of record.</p>
+            <div class="go"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></div></div>
+        </div>
+        <div class="topic" onclick="nav('about')">
+          <div class="thumb"><svg class="ti" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M9 13h6M9 17h6"/></svg></div>
+          <div class="tb"><h4>Data and method</h4>
+            <p>Every source, how the six datasets were joined, how a prediction is built, and what the
+               result cannot tell you.</p>
+            <div class="go"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></div></div>
+        </div>
       </div>
     </div>
   </div>
 
-  <div class="body" id="planner">
+  <div class="sect alt" id="planner">
     <div class="wrap">
-      <div class="shead">
-        <h2 class="dsp">Start with your land</h2>
-        <p>Four details, and the model does the rest — yield estimate, full cost breakdown, risk score
-           and a ranking of every other crop your district has records for.</p>
-      </div>
+      <h2 class="sh">Start with <b>your land</b></h2>
+      <p class="sh-p">Four details, and the model does the rest.</p>
       <div class="panel">
-        <div id="boot" class="load"><div class="spin"></div><p>Waking the server — the free tier sleeps when idle, so this can take up to thirty seconds.</p></div>
+        <div id="boot" class="load"><div class="spin"></div>
+          <p>Contacting the server. It sleeps when idle, so the first request can take up to thirty seconds.</p></div>
         <div id="fields" class="hide">
           <div class="fgrid">
-            <div class="field"><label for="st"><svg viewBox="0 0 24 24"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z"/><circle cx="12" cy="10" r="3"/></svg>State</label>
-              <select id="st" onchange="onState()"></select></div>
-            <div class="field"><label for="di"><svg viewBox="0 0 24 24"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z"/><circle cx="12" cy="10" r="3"/></svg>District</label>
-              <select id="di" onchange="onDistrict()" disabled></select></div>
-            <div class="field"><label for="cr"><svg viewBox="0 0 24 24"><path d="M12 22V10M12 10C12 6 9 3 5 3c0 4 3 7 7 7zM12 12c0-3.5 2.6-6 6-6 0 3.4-2.6 6-6 6z"/></svg>Crop and season</label>
-              <select id="cr" onchange="onCrop()" disabled></select></div>
-            <div class="field"><label for="ar"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 3v18"/></svg>Area (hectares)</label>
-              <input id="ar" type="number" value="2.5" min="0.1" step="0.1"></div>
+            <div class="field"><label for="st">State</label><select id="st" onchange="onState()"></select></div>
+            <div class="field"><label for="di">District</label><select id="di" onchange="onDistrict()" disabled></select></div>
+            <div class="field"><label for="cr">Crop and season</label><select id="cr" onchange="onCrop()" disabled></select></div>
+            <div class="field"><label for="ar">Area</label><input id="ar" type="number" value="2.5" min="0.1" step="0.1">
+              <div class="fhint">hectares</div></div>
           </div>
-
           <div class="scen">
             <div class="scen-t" id="scen-t">How is the monsoon looking?</div>
             <div class="scen-g" role="group" aria-label="Monsoon scenario">
@@ -622,103 +686,158 @@ h1 .accent{color:var(--g600);display:block}
                 <div class="n">Good</div><div class="mm" id="p75">—</div></button>
             </div>
           </div>
-
           <div id="ferr"></div>
           <button class="btn btn-p go" id="run" onclick="run()">Generate advisory</button>
         </div>
       </div>
     </div>
   </div>
+
+  <div class="sect">
+    <div class="wrap">
+      <h2 class="sh">What the records <b>actually show</b></h2>
+      <p class="sh-p">Findings from building this system. Several are unflattering, and they are published
+         here because a decision support tool that hides its weak spots is not support.</p>
+      <div class="split">
+        <div class="callout">
+          <h3>Coverage at a glance</h3>
+          <p>Six public datasets joined on state, district, crop, season and year, covering six crops
+             with yield, price and cost data available together.</p>
+          <div class="keyrow" style="grid-template-columns:1fr 1fr;margin-top:16px">
+            <div class="keyc"><b id="s-d">—</b><span>districts</span></div>
+            <div class="keyc"><b id="s-c">—</b><span>combinations</span></div>
+            <div class="keyc" style="border-top:1px solid var(--line)"><b id="s-r">—</b><span>model R²</span></div>
+            <div class="keyc" style="border-top:1px solid var(--line)"><b id="s-y">—</b><span>years</span></div>
+          </div>
+          <p style="margin-top:16px;margin-bottom:0"><a onclick="nav('insights')" style="color:var(--link);font-weight:600;cursor:pointer;text-decoration:underline">Full model performance →</a></p>
+        </div>
+        <div>
+          <div class="newsitem">
+            <div class="tags"><span class="tag g">Finding</span><span class="tag">Variance</span></div>
+            <h4>73% of yield variation is between districts, not between years</h4>
+            <p>Soil, irrigation infrastructure, seed access and local practice decide most of the outcome.
+               A model given only rainfall and temperature reaches R² 0.09; adding each district-crop's own
+               historical baseline lifts it to 0.78. This is why the monsoon setting moves the risk score
+               sharply but shifts the yield estimate only a little.</p>
+          </div>
+          <div class="newsitem">
+            <div class="tags"><span class="tag g">Finding</span><span class="tag a">Caution</span></div>
+            <h4>The gain over simply repeating last year is modest</h4>
+            <p>Repeating last year's yield scores R² 0.744 against the model's 0.776. The model earns its
+               place because it does not need last year's figure — which a farmer planning ahead does not
+               have — rather than because it is dramatically more accurate.</p>
+          </div>
+          <div class="newsitem">
+            <div class="tags"><span class="tag c">Limitation</span><span class="tag">Chickpea</span></div>
+            <h4>Chickpea predictions are weak and should be treated with caution</h4>
+            <p>Per-crop R² runs 0.70 for maize and 0.66 for rice, but only 0.13 for chickpea — worse than
+               its own district-mean baseline. It is a rainfed rabi pulse whose year-to-year swings neither
+               the baseline nor the weather features capture.</p>
+          </div>
+          <div class="newsitem">
+            <div class="tags"><span class="tag g">Finding</span><span class="tag">Economics</span></div>
+            <h4>Most crops do not clear the full C2 cost</h4>
+            <p>Measured against the full economic cost including imputed rent on land already owned, most
+               district-crop combinations return a negative margin. That matches the cost-of-cultivation
+               literature, and is the reason farmer groups argue minimum support prices should be set at
+               1.5× C2 rather than 1.5× A2+FL.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </section>
 
-<!-- ======================= RESULTS ======================= -->
+<!-- ======================= INTERIOR PAGES ======================= -->
 <section id="s-res" class="hide">
-  <div class="phead"><div class="wrap">
-    <div class="ph-l">
-      <button class="ph-back" onclick="nav('home')" aria-label="Back to the planner">
-        <svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></button>
-      <div><div class="ph-t" id="r-t">—</div><div class="ph-s" id="r-s">—</div></div>
-    </div>
-    <div class="ph-r">
-      <span class="chipd" id="r-b">—</span>
-      <button class="btn-w" onclick="exportCsv()">Export CSV</button>
-      <button class="btn-w" onclick="window.print()">Print</button>
-    </div>
-  </div></div>
-  <div class="body"><div class="wrap" id="r-body"></div></div>
+  <div class="pbanner"><svg class="art" aria-hidden="true"><use href="#land"/></svg><div class="scrim"></div>
+    <div class="wrap">
+      <div><div class="pb-t" id="r-t">—</div><div class="pb-s" id="r-s">—</div></div>
+      <div class="pb-r"><span class="chipd" id="r-b">—</span>
+        <button class="btn-w" onclick="exportCsv()">Export CSV</button>
+        <button class="btn-w" onclick="window.print()">Print</button>
+        <button class="btn-w" onclick="nav('home')">New advisory</button></div>
+    </div></div>
+  <div class="sect alt"><div class="wrap" id="r-body"></div></div>
 </section>
 
-<!-- ======================= COMPARE ======================= -->
 <section id="s-compare" class="hide">
-  <div class="phead"><div class="wrap">
-    <div class="ph-l"><div>
-      <div class="ph-t">Compare every crop</div>
-      <div class="ph-s">Each crop your district has records for, ranked by suitability</div></div></div>
-  </div></div>
-  <div class="body"><div class="wrap">
-    <div class="panel" style="margin-bottom:20px">
+  <div class="pbanner"><svg class="art" aria-hidden="true"><use href="#land"/></svg><div class="scrim"></div>
+    <div class="wrap"><div>
+      <div class="pb-t">Compare crops</div>
+      <div class="pb-s">Every crop a district has records for, ranked by suitability</div></div></div></div>
+  <div class="sect alt"><div class="wrap">
+    <div class="panel" style="margin-bottom:22px">
       <div class="fgrid">
         <div class="field"><label for="c-st">State</label><select id="c-st" onchange="cState()"></select></div>
         <div class="field"><label for="c-di">District</label><select id="c-di" onchange="cRun()" disabled></select></div>
         <div class="field"><label for="c-sc">Monsoon</label>
           <select id="c-sc" onchange="cRun()"><option value="poor">Poor</option>
           <option value="normal" selected>Normal</option><option value="good">Good</option></select></div>
-        <div class="field"><label for="c-ar">Area (hectares)</label>
-          <input id="c-ar" type="number" value="1" min="0.1" step="0.1" onchange="cRun()"></div>
+        <div class="field"><label for="c-ar">Area</label>
+          <input id="c-ar" type="number" value="1" min="0.1" step="0.1" onchange="cRun()">
+          <div class="fhint">hectares</div></div>
       </div>
     </div>
     <div id="c-body"></div>
   </div></div>
 </section>
 
-<!-- ======================= INSIGHTS ======================= -->
 <section id="s-insights" class="hide">
-  <div class="phead"><div class="wrap">
-    <div class="ph-l"><div>
-      <div class="ph-t">How this works</div>
-      <div class="ph-s">What the model does, how well it does it, and where it fails</div></div></div>
-  </div></div>
-  <div class="body"><div class="wrap" id="i-body"></div></div>
+  <div class="pbanner"><svg class="art" aria-hidden="true"><use href="#land"/></svg><div class="scrim"></div>
+    <div class="wrap"><div>
+      <div class="pb-t">Model performance</div>
+      <div class="pb-s">What the model does, how well it does it, and where it fails</div></div></div></div>
+  <div class="sect alt"><div class="wrap" id="i-body"></div></div>
 </section>
 
-<!-- ======================= ABOUT ======================= -->
 <section id="s-about" class="hide">
-  <div class="phead"><div class="wrap">
-    <div class="ph-l"><div>
-      <div class="ph-t">Data and method</div>
-      <div class="ph-s">Every source, how they were joined, and what the result cannot tell you</div></div></div>
-  </div></div>
-  <div class="body"><div class="wrap" id="a-body"></div></div>
+  <div class="pbanner"><svg class="art" aria-hidden="true"><use href="#land"/></svg><div class="scrim"></div>
+    <div class="wrap"><div>
+      <div class="pb-t">Data and method</div>
+      <div class="pb-s">Every source, how they were joined, and what the result cannot tell you</div></div></div></div>
+  <div class="sect alt"><div class="wrap" id="a-body"></div></div>
 </section>
 
-<!-- ======================= HISTORY ======================= -->
 <section id="s-history" class="hide">
-  <div class="phead"><div class="wrap">
-    <div class="ph-l"><div>
-      <div class="ph-t">Your saved advisories</div>
-      <div class="ph-s" id="h-s">Everything you have kept, newest first</div></div></div>
-  </div></div>
-  <div class="body"><div class="wrap" id="h-body"></div></div>
+  <div class="pbanner"><svg class="art" aria-hidden="true"><use href="#land"/></svg><div class="scrim"></div>
+    <div class="wrap"><div>
+      <div class="pb-t">My advisories</div>
+      <div class="pb-s" id="h-s">Everything you have saved, newest first</div></div></div></div>
+  <div class="sect alt"><div class="wrap" id="h-body"></div></div>
 </section>
+
+<!-- ======================= FEEDBACK ======================= -->
+<div class="helpful" id="helpful"><div class="wrap" id="helpful-in">
+  <span>Was this page useful?</span>
+  <button onclick="helpful(true)">Yes</button>
+  <button onclick="helpful(false)">No</button>
+</div></div>
 
 <!-- ======================= FOOTER ======================= -->
 <footer class="foot" id="foot">
   <div class="wrap">
     <div class="fgrid2">
       <div>
-        <div class="brand" style="cursor:default">
-          <div class="mark"><svg viewBox="0 0 24 24"><path d="M12 22V10M12 10C12 6 9 3 5 3c0 4 3 7 7 7zM12 12c0-3.5 2.6-6 6-6 0 3.4-2.6 6-6 6z"/></svg></div>
-          <div><div class="bname">KrishiDSS</div><div class="btag">Crop planning, grounded in data</div></div>
+        <div class="fident ident" style="cursor:default">
+          <div class="crest"><svg viewBox="0 0 24 24"><path d="M12 22V10M12 10C12 6 9 3 5 3c0 4 3 7 7 7zM12 12c0-3.5 2.6-6 6-6 0 3.4-2.6 6-6 6z"/></svg></div>
+          <div class="idt"><div class="n1">KrishiDSS</div>
+            <div class="n2">Crop Planning Decision Support System</div></div>
         </div>
-        <p class="fb">A decision support system for Indian crop planning, built on six public
-          government and research datasets. An undergraduate capstone project — a demonstration on
-          historical records, not a commercial advisory service.</p>
+        <p class="fb"><b>Data acknowledgement.</b> This system is built on public records published by the
+          Ministry of Agriculture and Farmers Welfare, the Directorate of Economics and Statistics, and the
+          ICRISAT District Level Database maintained with the Tata-Cornell Institute. We acknowledge the
+          enumerators and statistical staff whose district-level collection over five decades makes work of
+          this kind possible.</p>
+        <p class="fb"><b>Independent project.</b> KrishiDSS is an undergraduate capstone project. It is not
+          affiliated with, endorsed by, or an official publication of any government department, and it is
+          not individual agronomic advice.</p>
       </div>
       <div class="fcol">
         <h6>The tool</h6>
         <a onclick="nav('home')">Plan a season</a>
         <a onclick="nav('compare')">Compare crops</a>
-        <a onclick="nav('insights')">How it works</a>
+        <a onclick="nav('insights')">Model performance</a>
         <a onclick="nav('about')">Data and method</a>
       </div>
       <div class="fcol">
@@ -762,18 +881,33 @@ async function api(p,opt){
 }
 
 const SCREENS=['home','res','compare','insights','about','history','auth'];
+const CRUMB={res:'Season advisory',compare:'Compare crops',insights:'Model performance',
+             about:'Data and method',history:'My advisories'};
 function nav(s){
   SCREENS.forEach(k=>$('s-'+k).classList.toggle('hide',k!==s));
   const bare = s==='auth';
-  $('hdr').classList.toggle('hide',bare);
-  $('foot').classList.toggle('hide',bare);
-  document.querySelectorAll('.pillnav a').forEach(a=>
+  ['util','mainnav','foot','helpful'].forEach(id=>$(id).classList.toggle('hide',bare));
+  $('crumb').classList.toggle('hide',bare||s==='home');
+  if(CRUMB[s]) $('crumb-t').textContent=CRUMB[s];
+  document.querySelectorAll('.mainnav a').forEach(a=>
     a.classList.toggle('on',!bare&&(a.dataset.s===s||(s==='res'&&a.dataset.s==='home'))));
+  resetHelpful();
   window.scrollTo(0,0);
   if(s==='insights') renderInsights();
   if(s==='about')    renderAbout();
   if(s==='history')  renderHistory();
   if(s==='compare'&&!$('c-st').options.length) cInit();
+}
+
+/* ---------- page usefulness ---------- */
+function resetHelpful(){
+  $('helpful-in').innerHTML='<span>Was this page useful?</span>'+
+    '<button onclick="helpful(true)">Yes</button><button onclick="helpful(false)">No</button>';
+}
+function helpful(yes){
+  $('helpful-in').innerHTML = yes
+    ? '<span>Thank you \u2014 glad it was useful.</span>'
+    : '<span>Thank you. The <a onclick="nav(\'about\')" style="color:var(--deep2);text-decoration:underline;cursor:pointer;font-weight:700">data and method</a> page sets out what this tool can and cannot answer.</span>';
 }
 
 /* ---------- boot ---------- */
@@ -1144,21 +1278,21 @@ function renderInsights(){
     'score noticeably but shift the yield estimate only a little. It is the correct behaviour, not a bug.');
 
   const findings='<div class="qgrid">'+
-    '<div class="q"><div class="qn">1</div><div><h5>District identity dominates</h5>'+
+    '<div class="q"><div class="qn">Finding 01</div><h5>District identity dominates</h5>'+
       '<p>A model given only rainfall and temperature reaches R² 0.09. Adding each district-crop’s own '+
       'historical baseline lifts it to 0.78. Where you farm matters far more than what this particular '+
-      'monsoon does.</p></div></div>'+
-    '<div class="q"><div class="qn">2</div><div><h5>The gain over a naive rule is modest</h5>'+
+      'monsoon does.</p></div>'+
+    '<div class="q"><div class="qn">Finding 02</div><h5>The gain over a naive rule is modest</h5>'+
       '<p>Repeating last year’s yield scores 0.744 against the model’s 0.776. We report this rather than '+
-      'quoting R² alone, because a high R² with no baseline to compare against says very little.</p></div></div>'+
-    '<div class="q"><div class="qn">3</div><div><h5>Chickpea is the weak crop</h5>'+
+      'quoting R² alone, because a high R² with no baseline to compare against says very little.</p></div>'+
+    '<div class="q"><div class="qn">Finding 03</div><h5>Chickpea is the weak crop</h5>'+
       '<p>Per-crop R² runs 0.70 for maize and 0.66 for rice, but only 0.13 for chickpea — worse than its own '+
       'district-mean baseline. It is a rainfed rabi pulse whose year-to-year swings neither the baseline nor '+
-      'the weather features capture. Treat chickpea numbers with caution.</p></div></div>'+
-    '<div class="q"><div class="qn">4</div><div><h5>Most crops do not clear C2</h5>'+
+      'the weather features capture. Treat chickpea numbers with caution.</p></div>'+
+    '<div class="q"><div class="qn">Finding 04</div><h5>Most crops do not clear C2</h5>'+
       '<p>Against the full economic cost including imputed land rent, most district-crop combinations return a '+
       'negative margin. That matches the cost-of-cultivation literature, and is the reason farmer groups argue '+
-      'MSP should be set at 1.5× C2 rather than 1.5× A2+FL.</p></div></div>'+
+      'MSP should be set at 1.5× C2 rather than 1.5× A2+FL.</p></div>'+
   '</div>';
 
   $('i-body').innerHTML=
