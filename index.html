@@ -466,8 +466,89 @@ h3.sub{font-size:20px;font-weight:600;margin-bottom:12px;letter-spacing:-.01em}
 .auth-r .foot-n{font-size:13px;color:#87A995;margin-top:30px;max-width:46ch;line-height:1.7}
 @media(max-width:960px){ .auth{grid-template-columns:1fr} .auth-r{display:none} }
 
+/* ============================ MODE TOGGLE ============================ */
+.modes{display:flex;gap:0;border:1px solid var(--line);background:#fff;margin-bottom:22px;width:fit-content}
+.modes button{display:flex;align-items:center;gap:9px;padding:12px 22px;font-size:15px;font-weight:600;
+              color:var(--t2);border-right:1px solid var(--line);transition:background .13s,color .13s}
+.modes button:last-child{border-right:none}
+.modes button svg{width:17px;height:17px;stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.modes button:hover{background:var(--bg2)}
+.modes button.on{background:var(--deep);color:#fff}
+.modes .mtag{font-size:10.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+             background:var(--accent);color:#fff;padding:2px 6px;margin-left:2px}
+.modes button.on .mtag{background:rgba(255,255,255,.22)}
+@media(max-width:560px){.modes{width:100%}.modes button{flex:1;justify-content:center;padding:11px 8px;font-size:13.5px}
+  .modes button svg{display:none}.modes .mtag{display:none}}
+
+/* ============================ CHAT ============================ */
+.chatwrap{display:grid;grid-template-columns:1fr 372px;gap:20px;align-items:start}
+@media(max-width:1000px){.chatwrap{grid-template-columns:1fr}}
+.chatbox{background:#fff;border:1px solid var(--line);display:flex;flex-direction:column;min-height:520px}
+.chathead{background:var(--deep2);color:#fff;padding:15px 20px;display:flex;align-items:center;
+          justify-content:space-between;gap:14px;flex-wrap:wrap}
+.chathead .ch-l{display:flex;align-items:center;gap:11px}
+.chathead .dot{width:9px;height:9px;border-radius:50%;background:#4FB983;flex:none}
+.chathead b{font-size:15px;font-weight:700}
+.chathead span{font-size:12.5px;color:#A9CBB8;display:block}
+.chathead .chbtn{background:rgba(255,255,255,.13);border:1px solid rgba(255,255,255,.3);color:#fff;
+                 padding:7px 13px;font-size:12.5px;font-weight:600;border-radius:var(--r)}
+.chathead .chbtn:hover{background:rgba(255,255,255,.26)}
+.chathead .chbtn:disabled{opacity:.4;cursor:not-allowed}
+
+.chatlog{flex:1;padding:22px;overflow-y:auto;max-height:560px;display:flex;flex-direction:column;gap:16px}
+.bub{max-width:88%;font-size:15px;line-height:1.7}
+.bub.u{align-self:flex-end;background:var(--deep);color:#fff;padding:12px 16px;border-radius:12px 12px 2px 12px}
+.bub.a{align-self:flex-start;color:var(--t1)}
+.bub.a .who2{font-size:11.5px;font-weight:700;color:var(--deep);letter-spacing:.06em;
+             text-transform:uppercase;margin-bottom:6px;display:flex;align-items:center;gap:7px}
+.bub.a .who2 svg{width:14px;height:14px;stroke:var(--deep);fill:none;stroke-width:2}
+.bub.a p{margin-bottom:10px}
+.bub.a p:last-child{margin-bottom:0}
+.bub.e{align-self:flex-start;background:var(--clay-l);border-left:4px solid var(--clay);
+       color:#8A2F0A;padding:12px 15px;font-size:14px;max-width:100%}
+.srcline{font-size:12px;color:var(--t3);margin-top:10px;padding-top:9px;border-top:1px solid var(--line2);
+         display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.srcline i{font-style:normal;background:var(--g050);border:1px solid var(--g100);color:var(--deep);
+           padding:2px 7px;font-size:11px;font-weight:600}
+.typing{display:flex;gap:5px;align-items:center;padding:4px 0}
+.typing i{width:7px;height:7px;border-radius:50%;background:var(--sage-d);animation:bl 1.2s infinite}
+.typing i:nth-child(2){animation-delay:.18s}.typing i:nth-child(3){animation-delay:.36s}
+@keyframes bl{0%,60%,100%{opacity:.3}30%{opacity:1}}
+
+.chatin{border-top:1px solid var(--line);padding:16px 20px;background:var(--bg2)}
+.chatin .row{display:flex;gap:11px;align-items:flex-end}
+.chatin textarea{flex:1;border:1px solid #7A7D75;border-radius:var(--r);padding:11px 13px;font-size:15px;
+                 resize:none;outline:none;background:#fff;min-height:46px;max-height:130px;line-height:1.5;font-family:inherit}
+.chatin textarea:focus{border-color:var(--deep);box-shadow:0 0 0 3px var(--sage)}
+.chatin .hint{font-size:12px;color:var(--t3);margin-top:9px;line-height:1.55}
+.sendbtn{flex:none;padding:12px 20px}
+
+.chips{display:flex;gap:9px;flex-wrap:wrap;margin-top:14px}
+.chip{border:1px solid var(--line);background:#fff;padding:8px 14px;font-size:13.5px;color:var(--t2);
+      border-radius:99px;text-align:left}
+.chip:hover{border-color:var(--deep);color:var(--deep);background:var(--sage-xl)}
+
+/* side rail: the real numbers the assistant is quoting */
+.rail{position:sticky;top:88px}
+.railbox{background:#fff;border:1px solid var(--line)}
+.railbox .rh{background:var(--bg2);border-bottom:1px solid var(--line);padding:13px 18px;
+             font-size:13px;font-weight:700;display:flex;align-items:center;gap:9px}
+.railbox .rh svg{width:15px;height:15px;stroke:var(--deep);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.railbody{padding:18px}
+.railempty{padding:30px 20px;text-align:center;color:var(--t3);font-size:13.5px;line-height:1.65}
+.rkpi{border-bottom:1px solid var(--line2);padding:11px 0;display:flex;justify-content:space-between;
+      align-items:baseline;gap:12px}
+.rkpi:first-child{padding-top:0}
+.rkpi:last-child{border-bottom:none;padding-bottom:0}
+.rkpi span{font-size:13px;color:var(--t2)}
+.rkpi b{font-size:16px;font-weight:700;white-space:nowrap}
+.rkpi b.pos{color:var(--g600)} .rkpi b.neg{color:var(--clay)}
+.railwhat{font-size:12.5px;color:var(--t3);line-height:1.6;margin-top:14px;padding-top:13px;border-top:1px solid var(--line2)}
+.railtop{font-size:13px;color:var(--t2);line-height:1.7}
+.railtop b{color:var(--t1)}
+
 @media print{
-  .util,.mainnav,.crumb,.bbtns,.pb-r,.foot,.go,.scen,.saveprompt,.hact,.auth,.helpful{display:none!important}
+  .util,.mainnav,.crumb,.bbtns,.pb-r,.foot,.go,.scen,.saveprompt,.hact,.auth,.helpful,.modes,.chatin,.chips{display:none!important}
   body{background:#fff;font-size:12pt}
   .card,.crop,.kpi,.prose{break-inside:avoid;border:1px solid #ccc}
   .pbanner,.adv{background:#0E3320!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
@@ -660,7 +741,19 @@ h3.sub{font-size:20px;font-weight:600;margin-bottom:12px;letter-spacing:-.01em}
   <div class="sect alt" id="planner">
     <div class="wrap">
       <h2 class="sh">Start with <b>your land</b></h2>
-      <p class="sh-p">Four details, and the model does the rest.</p>
+      <p class="sh-p">Fill in four details yourself, or describe your situation and let the assistant
+         look it up for you. Both run the same model on the same records.</p>
+
+      <div class="modes hide" id="modes" role="group" aria-label="How to plan">
+        <button id="m-manual" class="on" onclick="setMode('manual')">
+          <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+          Fill in a form</button>
+        <button id="m-chat" onclick="setMode('chat')">
+          <svg viewBox="0 0 24 24"><rect x="3" y="8" width="18" height="12" rx="2"/><path d="M12 8V5M9 13h.01M15 13h.01M9 17h6"/></svg>
+          Ask the assistant<span class="mtag">New</span></button>
+      </div>
+
+      <div id="pane-manual">
       <div class="panel">
         <div id="boot" class="load"><div class="spin"></div>
           <p>Contacting the server. It sleeps when idle, so the first request can take up to thirty seconds.</p></div>
@@ -688,6 +781,35 @@ h3.sub{font-size:20px;font-weight:600;margin-bottom:12px;letter-spacing:-.01em}
           </div>
           <div id="ferr"></div>
           <button class="btn btn-p go" id="run" onclick="run()">Generate advisory</button>
+        </div>
+      </div>
+      </div><!-- /pane-manual -->
+
+      <div id="pane-chat" class="hide">
+        <div class="chatwrap">
+          <div class="chatbox">
+            <div class="chathead">
+              <div class="ch-l"><span class="dot"></span>
+                <div><b>KrishiDSS assistant</b>
+                  <span>Answers only from the model and the district records</span></div></div>
+              <div style="display:flex;gap:9px">
+                <button class="chbtn" onclick="chatReset()">New chat</button>
+                <button class="chbtn" id="chat-dl" onclick="chatDownload()" disabled>Download summary</button>
+              </div>
+            </div>
+            <div class="chatlog" id="chatlog" aria-live="polite"></div>
+            <div class="chatin">
+              <div class="row">
+                <textarea id="chat-in" rows="1" placeholder="Describe your land and what you are considering&hellip;"
+                  oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,130)+'px'"
+                  onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();chatSend()}"></textarea>
+                <button class="btn btn-p sendbtn" id="chat-send" onclick="chatSend()">Send</button>
+              </div>
+              <div class="hint">The assistant cannot advise on fertiliser, seed variety or sowing dates,
+                and it will not estimate a figure the records do not contain.</div>
+            </div>
+          </div>
+          <div class="rail" id="rail"></div>
         </div>
       </div>
     </div>
@@ -1657,8 +1779,208 @@ async function openSaved(i){
   await run();
 }
 
+/* ================= assistant ================= */
+/* The model never states a figure it did not receive from a tool call on the
+   server. Everything in the side rail comes back from /predict and /compare,
+   the same endpoints the form uses. */
+let CHAT_ON=false, CHAT_BUSY=false, CHAT_HIST=[], CHAT_LAST=null;
+
+const ICO_BOT='<svg viewBox="0 0 24 24"><rect x="3" y="8" width="18" height="12" rx="2"/><path d="M12 8V5M9 13h.01M15 13h.01M9 17h6"/></svg>';
+const ICO_TBL='<svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>';
+
+async function chatInit(){
+  try{
+    const r=await api('/chat/status');
+    CHAT_ON=!!r.enabled;
+  }catch(e){ CHAT_ON=false; }
+  $('modes').classList.toggle('hide',!CHAT_ON);
+  if(!CHAT_ON) setMode('manual');
+}
+
+function setMode(m){
+  const chat=(m==='chat'&&CHAT_ON);
+  $('m-manual').classList.toggle('on',!chat);
+  $('m-chat').classList.toggle('on',chat);
+  $('pane-manual').classList.toggle('hide',chat);
+  $('pane-chat').classList.toggle('hide',!chat);
+  if(chat&&!CHAT_HIST.length) chatGreet();
+}
+
+function chatGreet(){
+  $('chatlog').innerHTML=
+    '<div class="bub a">'+
+      '<div class="who2">'+ICO_BOT+'KrishiDSS assistant</div>'+
+      '<p>Tell me where your land is and what you are thinking of planting, and I will pull the '+
+      'records for it. For example: <i>"I have two hectares in Chittoor, the rains look weak this year, '+
+      'what should I plant?"</i></p>'+
+      '<p>I only report what the model and the district records return — I do not estimate figures, '+
+      'and I cannot advise on fertiliser, seed variety or sowing dates.</p>'+
+    '</div>'+
+    '<div class="chips">'+
+      ['What can rice give me in Chittoor this kharif?',
+       'Which crop is most suitable in Guntur on 3 hectares?',
+       'Compare crops in Krishna if the monsoon is poor'
+      ].map(t=>'<button class="chip" onclick="chatAsk(this.textContent)">'+esc(t)+'</button>').join('')+
+    '</div>';
+}
+
+function chatBubble(cls,html){
+  const d=document.createElement('div');
+  d.className='bub '+cls; d.innerHTML=html;
+  $('chatlog').appendChild(d);
+  $('chatlog').scrollTop=$('chatlog').scrollHeight;
+  return d;
+}
+
+function chatAsk(t){ $('chat-in').value=t; chatSend(); }
+
+async function chatSend(){
+  if(CHAT_BUSY) return;
+  const box=$('chat-in'), msg=box.value.trim();
+  if(!msg) return;
+  const chips=$('chatlog').querySelector('.chips'); if(chips) chips.remove();
+  box.value=''; box.style.height='auto';
+  chatBubble('u',esc(msg));
+  CHAT_BUSY=true; $('chat-send').disabled=true; $('chat-send').textContent='Thinking…';
+  const think=chatBubble('a','<div class="who2">'+ICO_BOT+'KrishiDSS assistant</div>'+
+    '<div class="typing"><i></i><i></i><i></i></div>');
+  try{
+    const r=await api('/chat',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({message:msg,history:CHAT_HIST.slice(-8)})});
+    const paras=String(r.reply||'').split(/\n{2,}/).filter(Boolean)
+      .map(p=>'<p>'+esc(p).replace(/\n/g,'<br>')+'</p>').join('') || '<p>No answer came back.</p>';
+    const tools=(r.used_tools||[]).filter((v,i,a)=>a.indexOf(v)===i);
+    const src=tools.length
+      ? '<div class="srcline">Figures retrieved from the model: '+
+        tools.map(t=>'<i>'+esc(t.replace(/_/g,' '))+'</i>').join('')+'</div>' : '';
+    think.innerHTML='<div class="who2">'+ICO_BOT+'KrishiDSS assistant</div>'+paras+src;
+    CHAT_HIST.push({role:'user',text:msg},{role:'assistant',text:String(r.reply||'')});
+    if(r.advisory||r.compare){ CHAT_LAST=r; renderRail(r); }
+    $('chat-dl').disabled=false;
+  }catch(e){
+    think.remove();
+    chatBubble('e','<b>Could not answer that.</b> '+esc(e.message||'')+
+      ' The server sleeps when idle, so the first message after a pause can time out. Try again.');
+  }finally{
+    CHAT_BUSY=false; $('chat-send').disabled=false; $('chat-send').textContent='Send';
+    $('chatlog').scrollTop=$('chatlog').scrollHeight;
+  }
+}
+
+function renderRail(r){
+  const p=r.advisory, cmp=r.compare;
+  let h='';
+  if(p){
+    const has=p.profit_rs_ha!==undefined, pos=has&&p.profit_rs_ha>=0;
+    h+='<div class="railbox" style="margin-bottom:16px">'+
+      '<div class="rh">'+ICO_TBL+title(p.crop)+' · '+title(p.district)+'</div><div class="railbody">'+
+      '<div class="rkpi"><span>Predicted yield</span><b>'+p.yield_t_ha+' t/ha</b></div>'+
+      '<div class="rkpi"><span>Total harvest</span><b>'+p.total_tonnes+' t</b></div>'+
+      '<div class="rkpi"><span>Expected price</span><b>'+(p.price_rs_qtl?rs(p.price_rs_qtl):'—')+'/qtl</b></div>'+
+      (has?'<div class="rkpi"><span>Cost, full C2</span><b>'+rs(p.cost_rs_ha)+'/ha</b></div>'+
+           '<div class="rkpi"><span>Margin over C2</span><b class="'+(pos?'pos':'neg')+'">'+
+             (pos?'+':'−')+rs(Math.abs(p.profit_rs_ha))+'/ha</b></div>':'')+
+      '<div class="rkpi"><span>Risk score</span><b>'+p.risk_score+' · '+riskWord(p.risk_score)+'</b></div>'+
+      '<div class="rkpi"><span>Rainfall, '+esc(p.scenario)+'</span><b>'+p.rainfall_mm+' mm</b></div>'+
+      '<div class="railwhat">Retrieved from the same model the form uses. '+
+        p.years_of_history+' years of record for this district-crop.</div>'+
+      '</div></div>';
+  }
+  if(cmp&&cmp.length){
+    h+='<div class="railbox"><div class="rh">'+ICO_TBL+'Ranked by suitability</div><div class="railbody"><div class="railtop">'+
+      cmp.slice(0,5).map((c,i)=>(i+1)+'. <b>'+title(c.crop)+'</b> '+title(c.season)+
+        ' — '+c.suitability_score+'/100, '+c.yield_t_ha+' t/ha').join('<br>')+
+      '</div></div></div>';
+  }
+  $('rail').innerHTML = h || railEmpty();
+}
+
+function railEmpty(){
+  return '<div class="railbox"><div class="rh">'+ICO_TBL+'Retrieved figures</div>'+
+    '<div class="railempty">Numbers the assistant looks up will appear here, so you can check every '+
+    'figure it quotes against the model directly.</div></div>';
+}
+
+function chatReset(){
+  CHAT_HIST=[]; CHAT_LAST=null; $('chat-dl').disabled=true;
+  $('rail').innerHTML=railEmpty(); chatGreet();
+}
+
+/* transcript + the retrieved figures, as a printable page */
+function chatDownload(){
+  if(!CHAT_HIST.length) return;
+  const p=CHAT_LAST&&CHAT_LAST.advisory, cmp=CHAT_LAST&&CHAT_LAST.compare;
+  const when=new Date().toLocaleString('en-IN',{dateStyle:'long',timeStyle:'short'});
+  const turns=CHAT_HIST.map(t=>
+    '<div class="t '+(t.role==='user'?'u':'a')+'"><div class="r">'+
+    (t.role==='user'?'You':'KrishiDSS assistant')+'</div>'+
+    esc(t.text).replace(/\n/g,'<br>')+'</div>').join('');
+  let figs='';
+  if(p){
+    const has=p.profit_rs_ha!==undefined;
+    figs='<h2>Retrieved figures</h2><table>'+
+      '<tr><th>Measure</th><th>Value</th><th>Source</th></tr>'+
+      '<tr><td>District and crop</td><td>'+title(p.crop)+' · '+title(p.season)+' · '+
+        title(p.district)+', '+title(p.state)+'</td><td>lookup table</td></tr>'+
+      '<tr><td>Predicted yield</td><td>'+p.yield_t_ha+' t/ha (range '+p.yield_low+'–'+p.yield_high+')</td><td>XGBoost model</td></tr>'+
+      '<tr><td>Area and total harvest</td><td>'+p.area_ha+' ha → '+p.total_tonnes+' t</td><td>derived</td></tr>'+
+      '<tr><td>Expected price</td><td>'+(p.price_rs_qtl?rs(p.price_rs_qtl)+'/qtl':'—')+'</td><td>'+
+        (p.price_source==='msp_fallback'?'MSP, no recent local price':'farm harvest price '+(p.price_year||''))+'</td></tr>'+
+      (has?'<tr><td>Cost of cultivation</td><td>'+rs(p.cost_rs_ha)+'/ha</td><td>C2, DES</td></tr>'+
+           '<tr><td>Margin over C2</td><td>'+(p.profit_rs_ha>=0?'+':'−')+rs(Math.abs(p.profit_rs_ha))+'/ha</td><td>derived</td></tr>':'')+
+      '<tr><td>Risk score</td><td>'+p.risk_score+'/100 ('+riskWord(p.risk_score)+')</td><td>derived</td></tr>'+
+      '<tr><td>Rainfall, '+esc(p.scenario)+' monsoon</td><td>'+p.rainfall_mm+' mm against a normal of '+
+        p.rain_normal_mm+' mm</td><td>ICRISAT DLD</td></tr>'+
+      '<tr><td>Years of record</td><td>'+p.years_of_history+'</td><td>district records</td></tr>'+
+      '</table>';
+  }
+  if(cmp&&cmp.length){
+    figs+='<h2>Crops ranked by suitability</h2><table><tr><th>#</th><th>Crop</th><th>Season</th>'+
+      '<th>Yield t/ha</th><th>Margin Rs/ha</th><th>Risk</th><th>Suitability</th></tr>'+
+      cmp.map((c,i)=>'<tr><td>'+(i+1)+'</td><td>'+title(c.crop)+'</td><td>'+title(c.season)+'</td><td>'+
+        c.yield_t_ha+'</td><td>'+(c.profit_rs_ha==null?'—':(c.profit_rs_ha>=0?'+':'−')+
+        Math.abs(Math.round(c.profit_rs_ha)).toLocaleString('en-IN'))+'</td><td>'+riskWord(c.risk_score)+
+        '</td><td>'+c.suitability_score+'</td></tr>').join('')+'</table>';
+  }
+  const doc='<!doctype html><html><head><meta charset="utf-8"><title>KrishiDSS advisory summary</title>'+
+    '<style>'+
+    'body{font-family:Georgia,"Times New Roman",serif;max-width:760px;margin:36px auto;padding:0 28px;color:#1A1B17;line-height:1.65}'+
+    'header{border-bottom:3px solid #14432C;padding-bottom:14px;margin-bottom:26px}'+
+    'h1{font-size:25px;margin:0 0 4px;color:#14432C}'+
+    '.sub{font-size:13px;color:#6E7069}'+
+    'h2{font-size:17px;margin:28px 0 10px;color:#14432C;border-bottom:1px solid #D4DAD3;padding-bottom:6px}'+
+    'table{width:100%;border-collapse:collapse;font-size:13.5px;font-family:system-ui,sans-serif}'+
+    'th{background:#14432C;color:#fff;text-align:left;padding:8px 10px;font-size:11.5px;text-transform:uppercase;letter-spacing:.04em}'+
+    'td{padding:8px 10px;border-bottom:1px solid #E6EAE4;vertical-align:top}'+
+    'tr:nth-child(even) td{background:#F5F7F4}'+
+    '.t{margin-bottom:16px;font-size:14.5px}'+
+    '.t .r{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:#6E7069;margin-bottom:3px;font-family:system-ui,sans-serif}'+
+    '.t.u{background:#F0F4F0;padding:11px 14px;border-left:3px solid #14432C}'+
+    '.t.a{padding:0 0 0 14px;border-left:3px solid #D4DAD3}'+
+    'footer{margin-top:34px;padding-top:16px;border-top:1px solid #D4DAD3;font-size:11.5px;color:#6E7069;line-height:1.7}'+
+    '@media print{body{margin:0}}'+
+    '</style></head><body>'+
+    '<header><h1>KrishiDSS advisory summary</h1>'+
+    '<div class="sub">Generated '+esc(when)+(p?' · '+title(p.district)+', '+title(p.state):'')+'</div></header>'+
+    figs+
+    '<h2>Conversation</h2>'+turns+
+    '<footer><b>How to read this.</b> Every figure above was retrieved from the KrishiDSS model and the '+
+    'district records behind it. The assistant did not estimate any of them. Costs are C2, the full '+
+    'economic cost including imputed rent on land already owned, so a negative margin means the crop does '+
+    'not clear that full cost — not that it cannot be farmed.<br><br>'+
+    'Records end in 2015. KrishiDSS is an undergraduate capstone project and an independent demonstration '+
+    'on historical data. It is not affiliated with any government department and is not individual '+
+    'agronomic advice.</footer></body></html>';
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([doc],{type:'text/html'}));
+  a.download='krishidss_advisory_summary.html';
+  a.click(); URL.revokeObjectURL(a.href);
+}
+
 boot();
 initAuth();
+chatInit();
+$('rail').innerHTML=railEmpty();
 </script>
 </body>
 </html>
