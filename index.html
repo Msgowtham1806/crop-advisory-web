@@ -836,24 +836,24 @@ h3.sub{font-size:20px;font-weight:600;margin-bottom:12px;letter-spacing:-.01em}
         <div>
           <div class="newsitem">
             <div class="tags"><span class="tag g">Finding</span><span class="tag">Variance</span></div>
-            <h4>73% of yield variation is between districts, not between years</h4>
+            <h4>82% of yield variation is between districts, not between years</h4>
             <p>Soil, irrigation infrastructure, seed access and local practice decide most of the outcome.
-               A model given only rainfall and temperature reaches R² 0.09; adding each district-crop's own
-               historical baseline lifts it to 0.78. This is why the monsoon setting moves the risk score
+               A model given only rainfall and temperature reaches R² 0.16; adding each district-crop's own
+               past record lifts it to 0.77. This is why the monsoon setting moves the risk score
                sharply but shifts the yield estimate only a little.</p>
           </div>
           <div class="newsitem">
             <div class="tags"><span class="tag g">Finding</span><span class="tag a">Caution</span></div>
             <h4>The gain over simply repeating last year is modest</h4>
-            <p>Repeating last year's yield scores R² 0.744 against the model's 0.776. The model earns its
-               place because it does not need last year's figure — which a farmer planning ahead does not
-               have — rather than because it is dramatically more accurate.</p>
+            <p>Repeating last year's yield scores R² 0.761 against the model's 0.785 on the same rows. The model
+               earns its place because it never uses last year's figure — which is not yet published when a
+               farmer plans the season — rather than because it is dramatically more accurate.</p>
           </div>
           <div class="newsitem">
             <div class="tags"><span class="tag c">Limitation</span><span class="tag">Chickpea</span></div>
             <h4>Chickpea predictions are weak and should be treated with caution</h4>
-            <p>Per-crop R² runs 0.70 for maize and 0.66 for rice, but only 0.13 for chickpea — worse than
-               its own district-mean baseline. It is a rainfed rabi pulse whose year-to-year swings neither
+            <p>Per-crop R² runs 0.74 for maize and 0.59 for rice, but only 0.12 for chickpea — no better than
+               its own recent average. It is a rainfed rabi pulse whose year-to-year swings neither
                the baseline nor the weather features capture.</p>
           </div>
           <div class="newsitem">
@@ -1081,7 +1081,7 @@ async function onDistrict(){
 
 async function onCrop(){
   const c=CROPS[+$('cr').value]; if(!c) return;
-  $('scen-t').textContent='How is the monsoon looking? Rainfall bands come from '+title($('di').value)+"'s own record, 1966–2015.";
+  $('scen-t').textContent='How is the monsoon looking? Rainfall bands come from '+title($('di').value)+"'s own record, 1966–2015: a 1-in-10 dry year, the median, a 1-in-10 wet year.";
   try{
     for(const s of ['poor','normal','good']){
       const o=await api('/predict',{method:'POST',headers:{'Content-Type':'application/json'},
@@ -1222,9 +1222,15 @@ function priceBar(p){
         p.price_source==='msp'?'at MSP':'farm harvest '+(p.price_year||''))+
     row('Break-even, full C2 cost',p.breakeven_price_rs_qtl,C_CLAY)+
     row('Minimum support price',p.msp_rs_qtl,C_GOLD)+
-    '<div class="tot '+(p.price_vs_breakeven_pct>=0?'':'neg')+'">'+
-      '<span>'+(p.price_vs_breakeven_pct>=0?'Clears the full cost by':'Falls short of the full cost by')+'</span>'+
-      '<b>'+Math.abs(p.price_vs_breakeven_pct).toFixed(0)+'%</b></div>'+
+    /* Without cost-of-production data there is no break-even to compare against,
+       so the comparison row is omitted rather than rendered empty. */
+    (Number.isFinite(p.price_vs_breakeven_pct)
+      ? '<div class="tot '+(p.price_vs_breakeven_pct>=0?'':'neg')+'">'+
+          '<span>'+(p.price_vs_breakeven_pct>=0?'Clears the full cost by':'Falls short of the full cost by')+'</span>'+
+          '<b>'+Math.abs(p.price_vs_breakeven_pct).toFixed(0)+'%</b></div>'
+      : '<div class="note" style="margin-top:14px">No cost-of-production figures are '+
+        'published for '+title(p.crop)+' in '+title(p.state)+', so the price cannot be '+
+        'compared against a break-even. It is shown against the minimum support price instead.</div>')+
   '</div>';
 }
 
@@ -1267,7 +1273,7 @@ function renderResults(p,cmp,hist){
   const kpis='<div class="kpis">'+
     '<div class="kpi"><div class="l">Predicted yield</div>'+
       '<div class="v">'+p.yield_t_ha+'<small> t/ha</small></div>'+
-      '<div class="n">range '+p.yield_low+'–'+p.yield_high+'</div></div>'+
+      '<div class="n">80% range '+p.yield_low+'–'+p.yield_high+'</div></div>'+
     '<div class="kpi b"><div class="l">Total harvest</div>'+
       '<div class="v">'+p.total_tonnes+'<small> t</small></div>'+
       '<div class="n">'+Math.round(p.total_tonnes*10)+' quintals from '+p.area_ha+' ha</div></div>'+
@@ -1349,8 +1355,8 @@ async function cRun(){
 /* ---------- insights ---------- */
 /* Per-crop mean absolute error, measured on the held-out split and shipped in the
    model's own metadata. Lower is better. */
-const MAE=[['Chickpea',0.288],['Groundnut',0.296],['Sorghum',0.344],
-           ['Rice',0.375],['Wheat',0.471],['Maize',0.611]];
+const MAE=[['Groundnut',0.251],['Chickpea',0.322],['Sorghum',0.360],
+           ['Rice',0.361],['Wheat',0.490],['Maize',0.524]];
 
 function renderInsights(){
   if(!HEALTH){ $('i-body').innerHTML='<div class="load"><div class="spin"></div><p>Loading…</p></div>'; return }
@@ -1377,43 +1383,44 @@ function renderInsights(){
   const chart2=fig('What the model beats, and by how much',
     'R² on held-out years. Each row is a different way of guessing next season.',
     hbar([
-      {label:'Weather only',value:0.09,display:'0.09',color:C_NEUT},
-      {label:"Repeat last year",value:0.744,display:'0.744',color:C_NEUT},
-      {label:'This model',value:0.776,display:'0.776',color:C_GREEN,hi:true}
+      {label:'Weather only',value:0.159,display:'0.159',color:C_NEUT},
+      {label:'District long-run average',value:0.669,display:'0.669',color:C_NEUT},
+      {label:'Average of last 3 years',value:0.731,display:'0.731',color:C_NEUT},
+      {label:'This model',value:0.767,display:'0.767',color:C_GREEN,hi:true}
     ],1),
-    'The honest reading: the jump over simply repeating last year’s yield is small. The model earns '+
-    'its place because it does not need last year’s figure — which a farmer planning ahead does not '+
-    'have — rather than because it is dramatically more accurate. These three come from the research '+
-    'evaluation; the headline R² of '+HEALTH.model_r2+' above is the deployed model, which uses no lagged yield at all.');
+    'All four are scored on the same 3,183 district-crop-seasons from 2011–2014. The gain over a simple '+
+    'recent average is real but modest; six different algorithms all land within 0.01 R² of each other, so '+
+    'the accuracy comes from how the district history is built, not from the choice of algorithm. Every '+
+    'history feature uses only seasons at least two years old, the same at training time and here.');
 
   const chart3=fig('Where yield variation lives',
     'Splitting total variation in recorded yields into between-district and within-district parts.',
     '<div class="stack">'+
-      '<div style="width:73.2%;background:'+C_GREEN+'">73.2%</div>'+
-      '<div style="width:26.8%;background:'+C_BLUE+'">26.8%</div>'+
+      '<div style="width:81.7%;background:'+C_GREEN+'">81.7%</div>'+
+      '<div style="width:18.3%;background:'+C_BLUE+'">18.3%</div>'+
     '</div>'+
     '<div class="legend">'+
       '<span><i class="sw" style="background:'+C_GREEN+'"></i>Between district-crop units — soil, irrigation, practice</span>'+
       '<span><i class="sw" style="background:'+C_BLUE+'"></i>Within a unit, year to year — weather and everything else</span>'+
     '</div>',
-    'This is why a weather-only model reaches just 0.09, and why the monsoon buttons move the risk '+
+    'This is why a weather-only model reaches just 0.16, and why the monsoon buttons move the risk '+
     'score noticeably but shift the yield estimate only a little. It is the correct behaviour, not a bug.');
 
   const findings='<div class="qgrid">'+
     '<div class="q"><div class="qn">Finding 01</div><h5>District identity dominates</h5>'+
-      '<p>A model given only rainfall and temperature reaches R² 0.09. Adding each district-crop’s own '+
-      'historical baseline lifts it to 0.78. Where you farm matters far more than what this particular '+
+      '<p>A model given only rainfall and temperature reaches R² 0.16. Adding each district-crop’s own '+
+      'past record lifts it to 0.77. Where you farm matters far more than what this particular '+
       'monsoon does.</p></div>'+
     '<div class="q"><div class="qn">Finding 02</div><h5>The gain over a naive rule is modest</h5>'+
-      '<p>Repeating last year’s yield scores 0.744 against the model’s 0.776. We report this rather than '+
+      '<p>Repeating last year’s yield scores 0.761 against the model’s 0.785 on the same rows. We report this rather than '+
       'quoting R² alone, because a high R² with no baseline to compare against says very little.</p></div>'+
     '<div class="q"><div class="qn">Finding 03</div><h5>Chickpea is the weak crop</h5>'+
-      '<p>Per-crop R² runs 0.70 for maize and 0.66 for rice, but only 0.13 for chickpea — worse than its own '+
-      'district-mean baseline. It is a rainfed rabi pulse whose year-to-year swings neither the baseline nor '+
+      '<p>Per-crop R² runs 0.74 for maize and 0.59 for rice, but only 0.12 for chickpea — no better than its own '+
+      'recent average. It is a rainfed rabi pulse whose year-to-year swings neither the baseline nor '+
       'the weather features capture. Treat chickpea numbers with caution.</p></div>'+
-    '<div class="q"><div class="qn">Finding 04</div><h5>Most crops do not clear C2</h5>'+
-      '<p>Against the full economic cost including imputed land rent, most district-crop combinations return a '+
-      'negative margin. That matches the cost-of-cultivation literature, and is the reason farmer groups argue '+
+    '<div class="q"><div class="qn">Finding 04</div><h5>Half the combinations do not clear C2</h5>'+
+      '<p>Against the full economic cost including imputed land rent, half of the district-crop combinations with '+
+      'a cost figure return a loss — from 39% for rice to 68% for maize. That matches the cost-of-cultivation literature, and is the reason farmer groups argue '+
       'MSP should be set at 1.5× C2 rather than 1.5× A2+FL.</p></div>'+
   '</div>';
 
@@ -1430,7 +1437,7 @@ function renderInsights(){
     '</div>'+
     '<div class="prose"><h2>What it cannot do</h2><ul>'+
       '<li><b>It does not forecast the weather.</b> You choose a monsoon scenario, mapped onto that '+
-        'district’s own rainfall percentiles over 1966–2015.</li>'+
+        'district’s own 1966–2015 record: a 1-in-10 dry year, the median, or a 1-in-10 wet year.</li>'+
       '<li><b>It does not project several years ahead.</b> The model pulls toward the district baseline, so a '+
         'multi-year line would be flat and misleading. One next-season estimate with an error band is shown instead.</li>'+
       '<li><b>It knows nothing about your specific field</b> — soil test, seed variety, input plan or irrigation schedule.</li>'+
@@ -1444,7 +1451,7 @@ function renderAbout(){
     '<div class="pbox"><div class="pt">Offline · built once</div>'+
       '<div class="pstep"><i>1</i><div>Join six datasets on state, district, crop, season and year</div></div>'+
       '<div class="pstep"><i>2</i><div>Aggregate rainfall and temperature over the real crop window, not the calendar year</div></div>'+
-      '<div class="pstep"><i>3</i><div>Train XGBoost with the split drawn by year</div></div>'+
+      '<div class="pstep"><i>3</i><div>Build history features from past seasons only, then train XGBoost with the split drawn by year</div></div>'+
       '<div class="pstep"><i>4</i><div>Freeze the model and a district-crop lookup table</div></div>'+
     '</div>'+
     '<div class="arrow"><svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div>'+
@@ -1483,6 +1490,11 @@ function renderAbout(){
         'says so on the card.</li>'+
       '<li>The train/test split is drawn <b>by year, never at random</b>, so the model is never scored on a '+
         'season it has already seen.</li>'+
+      '<li>Every <b>history feature uses only seasons at least two years old</b>, at training time and here. '+
+        'An earlier version averaged over years that included the one being predicted.</li>'+
+      '<li><b>Cost per hectare</b> is the C2 rate per quintal times the state’s typical yield, so a better harvest '+
+        'improves the margin. Rice money figures convert milled rice to paddy, the unit prices and costs are quoted in.</li>'+
+      '<li>The yield range is an <b>80% band</b> built from the model’s own past errors for that crop.</li>'+
     '</ul></div>'+
 
   '<div class="prose"><h2>Limitations</h2>'+
@@ -1490,7 +1502,7 @@ function renderAbout(){
       '<li><b>Records end in 2015.</b> This is a demonstration on historical data, not a live service.</li>'+
       '<li><b>Costs are C2 only.</b> A2+FL figures are not published for the overlapping years, so the '+
         'narrower paid-out cost cannot be shown — and we would not estimate it from a ratio.</li>'+
-      '<li><b>Cost covers 62% of combinations.</b> The rest return yield and income with no margin.</li>'+
+      '<li><b>Cost covers 61% of combinations.</b> The rest return yield and income with no margin.</li>'+
       '<li><b>Cost is state-level</b>, applied to every district in that state. It is an average, not a local figure.</li>'+
       '<li><b>Scope is six crops</b> — rice, wheat, maize, chickpea, groundnut and sorghum — the only ones '+
         'with yield, price and cost data available together.</li>'+
@@ -1922,7 +1934,7 @@ function chatDownload(){
       '<tr><th>Measure</th><th>Value</th><th>Source</th></tr>'+
       '<tr><td>District and crop</td><td>'+title(p.crop)+' · '+title(p.season)+' · '+
         title(p.district)+', '+title(p.state)+'</td><td>lookup table</td></tr>'+
-      '<tr><td>Predicted yield</td><td>'+p.yield_t_ha+' t/ha (range '+p.yield_low+'–'+p.yield_high+')</td><td>XGBoost model</td></tr>'+
+      '<tr><td>Predicted yield</td><td>'+p.yield_t_ha+' t/ha (80% range '+p.yield_low+'–'+p.yield_high+')</td><td>XGBoost model</td></tr>'+
       '<tr><td>Area and total harvest</td><td>'+p.area_ha+' ha → '+p.total_tonnes+' t</td><td>derived</td></tr>'+
       '<tr><td>Expected price</td><td>'+(p.price_rs_qtl?rs(p.price_rs_qtl)+'/qtl':'—')+'</td><td>'+
         (p.price_source==='msp_fallback'?'MSP, no recent local price':'farm harvest price '+(p.price_year||''))+'</td></tr>'+
